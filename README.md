@@ -1,6 +1,6 @@
 # Estimates of molecular convergence reveal pleiotropic genes underlying adaptive variation across teleost fish 
 #### Agneesh Barua<sup>1,2*</sup>, Brice Beinsteiner<sup>3</sup>, Vincent Laudet<sup>4,5</sup>, Marc Robinson-Rechavi<sup>1,2</sup> 
-<sup>1</sup>Department of Ecology and Evolution, University of Lausanne. 
+<sup>1</sup>Department of Ecology and Evolution, University of Lausanne, Switzerland. 
 \
 <sup>2</sup>Swiss Institute of Bioinformatics.  
 <sup>3</sup>Helmholtz Pioneer Campus, Helmholtz Zentrum München, Neuherberg, Germany. 
