@@ -1,0 +1,203 @@
+---
+title: "Ortholog_estimates"
+output:
+  html_document:
+    code_folding: hide
+    theme: 'lumen'
+    df_print: 'paged'
+date: "2023-01-12"
+---
+
+```{r setup_or, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(kableExtra)
+knitr::opts_chunk$set(warning = F,message = F)
+```
+## Processing orthologs from OrthoFinder {.tabset}
+For this study, I gathered a list of all teleost species that had chromosomal level annotated genomes from NCBI and Ensembl. I obtained a well resolved rooted phylogeny of all the teleost species in my original list from timetree.org. The time tree had phylogenetic relationship for 143 species. I used only those species in this study as having a well-resolved unambiguous species tree is crucial for this study. I next downloaded protein and CSD data from all 143 species. I constructed orthologs using Orthofinder.
+
+### Functions to process OrthoFinder output
+In this section I process the tsv output of orthofinder to give a parsable data structure.  
+```{r,eval=F}
+make_orth_table<-function(.data,var){
+  
+.data %>% drop_na()->d
+ncols<-max(stringr::str_count(d$sp,",")) +1
+colmn<-paste("col",1:ncols)
+d %>% separate(col = sp,sep = ",",into = colmn,remove = T)->d
+d %>% pivot_longer(!Orthogroup)->d
+d %>% mutate(orths = str_remove(d$value," ")) %>% 
+  dplyr::select(Orthogroup,orths) %>%
+  drop_na() %>%  return()
+
+}
+
+make_orth_table<-function(.x){
+  orthdata<-read_tsv("Datasets/OF_out.tsv") #ouput from OrthoFinder
+  orthdata %>% dplyr::select(c(Orthogroup,contains(.x)))->d
+  ncols<-max(stringr::str_count(d[,2],",")) +1 
+  colmn<-paste("col",1:ncols)
+  d %>% separate(col = 2,sep = ",",into = colmn,remove = T)->d
+  d %>% pivot_longer(!Orthogroup)->d
+  d %>% mutate(orths = str_remove(d$value," ")) %>% 
+    dplyr::select(Orthogroup,orths) %>% drop_na %>% mutate(sp = .x) %>%  return()
+}
+```
+
+### Taxonomic data from FishBase 
+My next step was to select orthgroups that had atleast one member from each of ther orders represented in my list of species. This was to ensure we capture the maximum taxonomic diversity while still having a manageable dataset to work with. To get taxonomic information I used FishBase.
+```{r,eval=FALSE}
+library(rfishbase)
+fish<-read_csv("./Datasets/DatasetS0_csv_files/FishList.csv", col_names = "sp")  #list of species; redundant file
+fish_call<-validate_names(str_replace(fish$sp,"_"," "))
+taxa<-rfishbase::load_taxa() %>% filter(Species %in% fish_call) %>% collect() %>% dplyr::select(Species,Order,Family)
+
+fish_data<-tibble(Species = str_replace(taxa$Species," ","_"),
+                  Order = str_split(taxa$Order,pattern = "/",simplify = T)[,1],
+                  Family = taxa$Family) %>% write_csv("./Datasets/DatasetS0_csv_files/Fish_data.csv") #Final list of species, order, and family used in the study. This was used to filter the orthList
+```
+Taxonomic information of speices used. 
+```{r,message=FALSE}
+tbl<-read.csv("./Datasets/DatasetS0_csv_files/Fish_data.csv")
+kbl(head(tbl,500)) %>% kable_styling() %>%
+  scroll_box(width = "500px", height = "400px")
+```
+
+### Filter the Orthogroup list
+To keep computational times reasonable I only selected the orthogroups that had less than a 1500 genes.
+```{r,eval=FALSE}
+#Filter orthogroups to contains only the one with all orders
+fish<-read_csv("./Datasets/DatasetS0_csv_files/Fish_data.csv")  #taxonomic data from FishBase of species
+fish<-as.list(fish$Species)
+
+#Function to make final orthogroup list
+map(fish,make_orth_table) %>% purrr::reduce(rbind) %>% saveRDS("./RDS/large_fish_tree_all_orders.rds") 
+orth_list<-readRDS("./RDS/large_fish_tree_all_orders.rds") #Orthogroups with 143 species, containing 2.4 million genes 
+
+#Filter out orthogroups with greater than 1500 genes
+orth_list %>% summarise(n = n(), .by = "Orthogroup") %>% filter(n < 1500) %>% write_csv("./Datasets/DatasetS0_csv_files/og_list_used_in_analysis.csv")
+```
+
+```{r,message=FALSE}
+tbl<-read_csv("./Datasets/DatasetS0_csv_files/og_list_used_in_analysis.csv")
+kbl(head(tbl,500)) %>% kable_styling() %>%
+  scroll_box(width = "200px", height = "400px")
+```
+
+### Checking the genes and proccesses that were excluded in the analysis
+```{r}
+orth_list<-readRDS("./RDS/large_fish_tree_all_orders.rds")
+orth_list_over_1.5k<-orth_list %>% summarise(n = n(), .by = "Orthogroup") %>% filter(n > 1500)
+#Get the orths in danio to annotate
+danio_1.5k<-orth_list %>% filter(sp == "Danio_rerio") %>% filter(Orthogroup %in% orth_list_over_1.5k$Orthogroup) %>% mutate(orths =  str_replace_all(orths, "\\.\\d+", ""))
+
+Danio_biomart<-read_csv("./Datasets/DatasetS0_csv_files/Danio_biomart.csv")
+
+danio_1.5k_annot<-left_join(danio_1.5k,Danio_biomart %>% dplyr::rename(orths = `Gene stable ID`), by = "orths")
+danio_1.5k_annot %>% write_csv("./Datasets/DatasetS0_csv_files/danio_1.5k_annot.csv")
+```
+
+```{r,message=FALSE}
+tbl<-read_csv("./Datasets/DatasetS0_csv_files/danio_1.5k_annot.csv")
+kbl(head(tbl,1000)) %>% kable_styling() %>%
+  scroll_box(width = "600px", height = "400px")
+```
+
+### GO enrichment analysis of over 1500 gene orthogroups
+I annotated and functionally characterised the excluded orthogroups, and found that they were mostly associated with immune processes and ion transport, whereas the gene sets we used in our analysis were involved in many diverse processes.  Although processes related to ion transport and immunity are important, our sample encompassed a diverse array of processes, and provided a powerful window into teleost evolution. 
+```{r,eval=FALSE}
+library(GOstats)
+library(GO.db)
+library(GSEABase)
+library(AnnotationDbi)
+library(RSQLite)
+library(tidyverse)
+
+
+annot<-read_tsv("./Datasets/DatasetS0_csv_files/annot.tsv", col_names = c("GO_id","evidence","gene")) #annot.tsv was obstained from DeepGO
+annot<-annot %>% mutate(gene =  str_remove(annot$gene,"..$")) 
+annot<-annot %>% mutate(gene =  str_remove(annot$gene,"\\."))
+goFrame<-GOFrame(as.data.frame(annot, organism = "fish"))
+goAllFrame<-GOAllFrame(goFrame)
+gsc<-GeneSetCollection(goAllFrame,setType = GOCollection())
+universe<-annot$gene
+
+GO_enrich<-function(.data){
+  
+  up<-GSEAGOHyperGParams(name = "GO enrich", 
+                             geneSetCollection = gsc,
+                             geneIds = .data,
+                             universeGeneIds = universe,
+                             ontology = "BP", #options: BP, MF, CC
+                             pvalueCutoff = 0.05,
+                             conditional = F,
+                             testDirection = "over")
+  Over_up<- hyperGTest(up)
+  
+
+  Over_up.pv<-pvalues(Over_up)
+  pv.fdr<-p.adjust(Over_up.pv,"fdr")
+  summary(Over_up) %>% as_tibble() %>% mutate(FDR = pv.fdr[1:nrow(summary(Over_up) %>% as_tibble())]) %>% dplyr::select(GOBPID,FDR,Term,Size) %>% filter(FDR<=0.05) %>% return()
+}
+
+orth_list<-readRDS("./RDS/large_fish_tree_all_orders.rds")
+orth_list<-orth_list %>% mutate(orths =  str_replace_all(orths, "\\.\\d+", ""))
+
+GO_enrich(orth_list %>% filter(Orthogroup %in% orth_list_over_1.5k$Orthogroup) %>% pull(orths)) %>% saveRDS("./RDS/more1.5kgenes_orths_GO_BP.rds")
+
+
+```
+
+```{r,eval=FALSE}
+## GO plot
+library(ggforce)
+
+go_plot<-function(.data,name){
+  GOenrich<-.data %>% arrange(desc(FDR)) %>% head(118)
+  ggplot(GOenrich,aes(x = 1-log10(FDR),
+                           y = as.factor(Term),
+                           size = log10(Size)))+
+    geom_point(color = "darkgreen")+
+    ylab("Biological Process")+
+    theme_light()->go_plot
+  #ggplot2::ggsave(paste("./Figures/",name,"_GO_enrich.png"),go_plot,width = 5,height = 10, units = "in",scale = 1.5,limitsize
+                  #= F,device = "png")
+  return(go_plot)
+  }
+
+go_plot(readRDS("./RDS/more1.5kgenes_orths_GO_BP.rds"))
+```
+
+
+```{r,out.width="110%"}
+knitr::include_graphics("./Figures/FigS1_over1k_GO_enrichment.png")
+```
+
+
+### Fish phylogeny
+I obtained a rooted phylogenetic tree from timetree.org
+```{r,message=FALSE}
+library(phytools)
+library(ggtree)
+library(RColorBrewer)
+
+tree<-read.newick("./Datasets/DatasetS0_csv_files/Fish_tree.nwk") 
+fish_data<-read.csv("./Datasets/DatasetS0_csv_files/Fish_data.csv")
+p<-ggtree(tree,branch.length = "none")#,layout = "circular")
+p$data %>% filter(isTip==F)->not_tips
+p$data %>% filter(isTip==T)->tips
+left_join(tips,(fish_data %>% dplyr::rename(label=Species)),by = "label")->tips
+not_tips %>% mutate(Order = "NA") %>% mutate(Family = "NA")->not_tips
+rbind(tips, not_tips)->p$data
+p <- p + geom_tree()+geom_tiplab(size=3)+hexpand(.95)
+```
+ 
+```{r,fig.dim=c(10,20)}
+p #Circular species tree in Fig 1
+```
+
+### Session info
+```{r print-session-info_orths}
+sessionInfo()
+```

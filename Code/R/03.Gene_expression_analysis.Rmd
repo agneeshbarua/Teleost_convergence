@@ -1,0 +1,192 @@
+---
+title: "Gene expression analysis of single-cell RNA seq of *Danio rerio* embryonic development and bulk RNA-seq of metamorphosis in *Amphiprion ocellaris*"
+output:
+  html_document:
+    code_folding: hide
+    theme: 'lumen'
+    df_print: 'paged'
+date: "2022-11-23"
+---
+
+```{r setup_sc_cell, include=FALSE}
+library(tidyverse)
+library(Seurat)
+library(gdata)
+library(hdf5r)
+library(SingleCellExperiment)
+library(DropletTestFiles)
+library(DropletUtils)
+library(scater)
+library(OSCA.intro)
+library(edgeR)
+library(DESeq2)
+knitr::opts_chunk$set(warning = F,message = F)
+```
+
+## Gene expression analysis of single-cell RNA seq of *Danio rerio* embryonic development {.tabset}
+To understand the role of the convergent genes during development we obtained single-cell RNAseq data from the Zebrahub consortium (https://zebrahub.ds.czbiohub.org/). By studying gene expression dynamics in different cell types across embryonic development, we can get insights into the role of these genes during development. 
+
+### Load and normalise the data
+The data has already undergone processing, QC, clustering, and dimentionality reduction by Zebrahub. I normalise the expression counts for gene expression quantification for each developmental stage. Please obtain the original data from the Zebrahub repository and run the following code to obtain all the processed data. 
+```{r,eval=FALSE}
+# Plots to visualise
+library(dittoSeq)
+
+cols<-randomcoloR::randomColor(50,luminosity = "dark")
+#Run this on all the processed h5ad files except the complete atlas
+norm_and_umap<-function(stage){
+zhub_dat<-readH5AD(paste0("./Datasets/Zebrahub_singlecell/Processed_objects/zf_atlas_",stage,"_v4_release.h5ad"))
+cell_info<-as.data.frame(colData(zhub_dat))
+g1<-ggpubr::ggviolin(cell_info,x = 'fish',y = 'total_counts',fill = 'fish',color = 'white',palette = 'npg',xlab = "Fish ID",ylab = "Total counts")
+g2<-ggpubr::ggviolin(cell_info,x = 'fish',y = 'total_counts_mt',fill = 'fish',color = 'white',palette = 'npg',xlab = "Fish ID",ylab = "Total mitochondrial counts")
+g3<-ggpubr::ggviolin(cell_info,x = 'fish',y = 'total_counts_nc',fill = 'fish',color = 'white',palette = 'npg',xlab = "Fish ID",ylab = "Total 'NC' counts")
+viz<-ggpubr::ggarrange(g1,g2,g3,ncol = 1,nrow = 3,common.legend = T)
+viz %>% ggsave(filename = paste0("./Plots/Zhub/",stage,"_violin.pdf"),device = "pdf",height = 10,width = 8,units = "in")
+
+#Log Normalise
+zhub_dat<-computeSumFactors(zhub_dat,clusters = zhub_dat$timepoint_cluster)
+zhub_dat<-logNormCounts(zhub_dat,transform='log')
+zhub_dat %>% saveRDS(paste0("./Datasets/RDS/zhub_",stage,"_log.rds")) #I provide the RDS file for the entire embryonic development phases. The 'full' dataset was used in all subsequent analysis
+
+
+umap_plot<-plotReducedDim(zhub_dat,dimred = 'X_umap',
+                          colour_by = 'zebrafish_anatomy_ontology_class',
+                          text_by = 'zebrafish_anatomy_ontology_class')+
+                          xlab("UMAP1")+
+                          ylab("UMAP2")+
+                          scale_color_manual(values = cols) 
+
+ggsave(umap_plot,filename = paste0("./Plots/Zhub/",stage,"_UMAP.svg"),device = "svg",height = 8,width = 15,units = "in")
+
+}
+
+zlist<-c("2dpf","3dpf","5dpf","10dpf","10hpf","12hpf","14hpf","16hpf","19hpf","24hpf","24hpf","full")
+
+purrr::map(zlist,norm_and_umap)
+
+```
+
+### Plot the convergent genes
+From the heatmap we observe the presence of two distinct clusters. 1) Set of genes being expressed throughout embryonic development and genes 2) Genes having more stage specific expression.
+```{r,eval=FALSE}
+library(dittoSeq)
+
+#Load tissue-specific convergent genes data
+#Users can use this to explore the data. I have not used information of tissue specificity to separate genes. Instead I focus on all the convergent genes in zebrafish ('danio_conv'). 
+brain<-read_csv("./Datasets/DatasetS0_csv_files/Brain_specifc_convergent_Danio_genes.csv")
+eye<-read_csv("./Datasets/DatasetS0_csv_files/Eye_specifc_convergent_Danio_genes.csv")
+heart<-read_csv("./Datasets/DatasetS0_csv_files/Heart_specifc_convergent_Danio_genes.csv")
+liver<-read_csv("./Datasets/DatasetS0_csv_files/Liver_specifc_convergent_Danio_genes.csv")
+muscle<-read_csv("./Datasets/DatasetS0_csv_files/Muscle_specifc_convergent_Danio_genes.csv")
+skin<-read_csv("./Datasets/DatasetS0_csv_files/Skin_specifc_convergent_Danio_genes.csv")
+ovary<-read_csv("./Datasets/DatasetS0_csv_files/Ovary_specifc_convergent_Danio_genes.csv")
+testis<-read_csv("./Datasets/DatasetS0_csv_files/Testis_specifc_convergent_Danio_genes.csv")
+
+#Plot timepoint heatmap
+time_heatmap<-function(tissue){
+  #Load normalised data
+zhub_dat<-readRDS("./RDS/zhub_full_log.rds")
+danio_conv<-read_csv("./Datasets/DatasetS0_csv_files/Danio_rerio_convergent_genes.csv")
+#You can decide specific genes you want to plot. I used this to make the UMAPs for the sparing and ubiquitiously expressed genes. Check in Figures/Zhub
+#for_plot<-c("gstt1b","pkp3b","pkp3a","gstt1a","mybpc2b","vtg1","adamts12","postnb","myom1a","mrc1a","hbae1.1","hbae1.3","myom1b","hbae3","vtg2","b3gnt3.4","adprhl1","adprh","hbaa1","hbae5","arf4a","hbaa2","pax7b","pax7a","mrc1b","slc22a21","adam17b","mical1","vtg5","eef1a2","eef1a1a","abcg1","upp2","c7b","eef2l2","arf4b","slc47a2.1","vwa11","slc22a4","slc47a4","slc47a3","anpepb","slc22a2","slc6a19b","slc6a19a.2 ","eef1a1l2","CU234171.1","osbpl7","slc6a18","c3a.5","vwa10.2","slc47a1","svopb","acp2","tmem198b","gstt1b","pkp3b","gstt1a","asic1a","tmem198a")
+
+
+rowData(zhub_dat)$marker_class <- ifelse(rownames(zhub_dat) %in% brain$`Gene name`, "brain",
+                                  ifelse(rownames(zhub_dat) %in% eye$`Gene name`, "eye",
+                                  ifelse(rownames(zhub_dat) %in% heart$`Gene name`, "heart",
+                                  ifelse(rownames(zhub_dat) %in% liver$`Gene name`, "liver",
+                                  ifelse(rownames(zhub_dat) %in% muscle$`Gene name`, "muscle",
+                                  ifelse(rownames(zhub_dat) %in% skin$`Gene name`, "skin",
+                                  ifelse(rownames(zhub_dat) %in% ovary$`Gene name`, "ovary",
+                                  ifelse(rownames(zhub_dat) %in% testis$`Gene name`, "testis",
+                                  ifelse(rownames(zhub_dat) %in% (danio_conv %>% distinct(`Gene name`))$`Gene name`, "Danio_all",   
+                                  "other")))))))))
+
+timepoint_mean <- try(aggregateAcrossCells(as(zhub_dat, "SingleCellExperiment"),  
+                                      ids = zhub_dat$timepoint, 
+                                      statistics = "mean",
+                                      use.assay.type = "logcounts", 
+                                      subset.row = rownames(zhub_dat)[rowData(zhub_dat)$marker_class == tissue]))
+
+dheat<-try(dittoHeatmap(timepoint_mean,
+             assay = "logcounts", 
+             cluster_cols = FALSE, 
+             scaled.to.max = TRUE,
+             heatmap.colors.max.scaled = viridis::viridis(100,direction = -1),
+             annot.by = "timepoint"))
+
+ggsave(plot = dheat,filename = paste0("./Figures/Zhub/Heatmap_genes_",tissue,".pdf"),device = "pdf",width = 5.2, height = 21.5,units = "in",limitsize = F)
+}
+
+time_heatmap("Danio_all")
+
+```
+
+```{r,out.width="85%",out.height="500%"}
+knitr::include_graphics("./Figures/Zhub/Heatmap_genes_Danio_all.pdf")
+```
+
+### Timepoint-tissue UMAP
+Users can use the following code to UMAPs for each specific timepoint. I use this code to genrate the UPAMs included in figure 2 and 3 of the main text. You can use it to make an individual gene plots or a plot with multiple genes. The full plots are avalilable in Dataset/DatasetS9_Zebrahub_singlecell/Figures
+```{r,eval=FALSE}
+#Use this function to make the gene expression UMAPs for tissue-specific convergent genes at different developmental timepoints Refer to the heatmap above to select timepoints and tissue.
+umap_gene_exp<-function(stage,tissue) {  
+zhub_dat<-readRDS(paste0("./RDS/zhub_",stage,"_log.rds"))
+danio_conv<-read_csv("./Datasets/DatasetS0_csv_files/Danio_rerio_convergent_genes.csv")
+
+#Again you can use a set of genes or all the genes
+#We show these in the example below. Plots for all genes at all stages is in Figures/Zhub
+#for_plot<-c("adam17b","adamts12","gstt1a","gstt1b","gstt1b","pax7a","pax7b","pkp3a","pkp3b","osbpl7")
+
+rowData(zhub_dat)$marker_class <- ifelse(rownames(zhub_dat) %in% brain$`Gene name`, "brain",
+                                  ifelse(rownames(zhub_dat) %in% eye$`Gene name`, "eye",
+                                  ifelse(rownames(zhub_dat) %in% heart$`Gene name`, "heart",
+                                  ifelse(rownames(zhub_dat) %in% liver$`Gene name`, "liver",
+                                  ifelse(rownames(zhub_dat) %in% muscle$`Gene name`, "muscle",
+                                  ifelse(rownames(zhub_dat) %in% skin$`Gene name`, "skin",
+                                  ifelse(rownames(zhub_dat) %in% ovary$`Gene name`, "ovary",
+                                  ifelse(rownames(zhub_dat) %in% testis$`Gene name`, "testis",
+                                  ifelse(rownames(zhub_dat) %in% (danio_conv$`Gene name`), "all_conv_genes", 
+                                  "other")))))))))
+
+# UMAP colored by expression for all markers - plotReducedDim
+plot_list  <- lapply(rownames(zhub_dat)[rowData(zhub_dat)$marker_class == tissue], function(x){
+                      p <- plotReducedDim(zhub_dat, 
+                                          dimred = 'X_umap',
+                                          colour_by = x,
+                                          by_exprs_values = "logcounts",
+                                          point_size = 0.4)+
+                          scale_colour_viridis_c(option = "D",direction = -1)+
+                        xlab("UMAP1")+
+                        ylab("UMAP2")+
+                        labs(color = x)+
+                        theme(axis.text = element_blank(),
+                              axis.ticks = element_blank())
+                      return(p)
+                    })
+
+#Use this to make a single plot with all the genes
+cowplot::plot_grid(plotlist = plot_list) %>% ggsave(filename = paste0("./Figures/Zhub/gene_UMAP_",stage,"_",tissue,".pdf"),device = "pdf",width = 50, height = 30, units = "in", limitsize = F)
+
+#save individual plots
+#names(plot_list)<-rownames(zhub_dat)[rowData(zhub_dat)$marker_class == tissue]
+#for (name in names(plot_list)) {
+#  plot_file_name <- paste0(name, ".pdf")  # Create file name
+#  ggsave(filename = paste0("./Plots/Zhub/individual_gene_plots/",stage,"_",name,"_",tissue,".pdf"), 
+#         plot = plot_list[[name]], 
+#         device = "pdf",
+#         width = 4, height = 3, units = "in", limitsize = F)
+#  }
+
+}
+
+umap_gene_exp(stage = "10hpf",tissue = "all_conv_genes")
+umap_gene_exp(stage = "12hpf",tissue = "all_conv_genes")
+umap_gene_exp(stage = "14hpf",tissue = "all_conv_genes")
+umap_gene_exp(stage = "16hpf",tissue = "all_conv_genes")
+umap_gene_exp(stage = "19hpf",tissue = "all_conv_genes")
+umap_gene_exp(stage = "24hpf",tissue = "all_conv_genes")
+umap_gene_exp(stage = "3dpf",tissue = "all_conv_genes")
+umap_gene_exp(stage = "5dpf",tissue = "all_conv_genes")
+umap_gene_exp(stage = "10dpf",tissue = "all_conv_genes")
+```

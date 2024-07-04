@@ -1,0 +1,5 @@
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: protobuf==3.9.2 in /users/abarua/.local/lib/python3.7/site-packages (3.9.2)
+Requirement already satisfied: six>=1.9 in /users/abarua/.local/lib/python3.7/site-packages (from protobuf==3.9.2) (1.16.0)
+Requirement already satisfied: setuptools in /dcsrsoft/spack/arolle/v1.0/spack/opt/spack/linux-rhel8-zen2/gcc-10.4.0/python-3.7.10-klg7g4ukc26dx26jvykmofv2b5lwhmdp/lib/python3.7/site-packages (from protobuf==3.9.2) (47.1.0)
+Total prediction time for 4323531 sequences is 192621

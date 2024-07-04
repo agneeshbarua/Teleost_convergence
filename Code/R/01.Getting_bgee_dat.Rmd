@@ -1,0 +1,594 @@
+---
+title: "Bgee_search"
+output:
+  html_document:
+    code_folding: hide
+    theme: 'lumen'
+    df_print: 'paged'
+date: "2022-11-23"
+---
+
+```{r setup_getting_bgee, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r import-libraries,message=FALSE,echo=FALSE}
+## Libraries
+library(tidyverse)
+library(BgeeDB)
+```
+
+## Downloading Bgee data {.tabset}
+This section deals with connecting to the Bgee server and downloading the data. 
+
+### Functions to download Bgee data
+Here are are the functions I used to download and process the data from Bgee. 
+Accesses the Bgee data set and download data
+```{r bgee-download,eval=FALSE}
+# Function to download RNA-seq data from Bgee
+bgee_download <- function(species, samples) {
+  print(species)
+  print(samples)
+  
+  bgee <- BgeeDB::Bgee$new(species=species, dataType="rna_seq")
+  
+  bgee.data <- BgeeDB::getData(bgee, sampleId=samples)
+  bgee.data <- bind_rows(bgee.data)
+  bgee.data[, c("Anatomical.entity.name", "Stage.name", "Strain")] <- 
+    apply(bgee.data[, c("Anatomical.entity.name", "Stage.name", "Strain")], 2, 
+          function(i) { gsub('\"', "", i) })
+  
+  return(bgee.data)
+}
+
+species.list <- listBgeeSpecies(release="15.0")
+
+# Did this manually to identify the fishes
+# NCBI taxonomy ID
+species.fish <- c("Lepisosteus_oculatus"="7918",
+                  "Anguilla_anguilla"="7936",
+                  "Danio_rerio"="7955",
+                  "Astyanax_mexicanus"="7994",
+                  "Esox_lucius"="8010",
+                  "Salmo_salar"="8030",
+                  "Gadus_morhua"="8049",
+                  "Poecilia_reticulata"="8081",
+                  "Oryzias_latipes"="8090",
+                  "Astatotilapia_calliptera"="8154",
+                  "Neolamprologus_brichardi"="32507",
+                  "Scophthalmus_maximus"="52904",
+                  "Gasterosteus_aculeatus"="69293",
+                  "Nothobranchius_furzeri"="105023")
+
+#Use the code below to retrieve annotations of samples for each species. 
+annotation <- 
+  lapply(species.fish, function(id) {
+    getAnnotation(Bgee$new(
+      species=id, dataType="rna_seq"))
+  } )
+names(annotation) <- names(species.fish)
+#for (s in names(species.fish)) {
+#  annotation[[s]]$sample.annotation$Anatomical.entity.name <-
+#    gsub(" ","_", annotation[[s]]$sample.annotation$Anatomical.entity.name)
+#}
+# Separate sample and experiment annotations
+annotation.sample <- vector(mode="list",length=length(species.fish))
+names(annotation.sample) <- names(species.fish)
+annotation.exp <- vector(mode="list",length=length(species.fish))
+names(annotation.exp) <- names(species.fish)
+for (s in names(species.fish)) {
+  annotation.sample[[s]] <- annotation[[s]][["sample.annotation"]]
+  annotation.exp[[s]] <- annotation[[s]][["experiment.annotation"]] 
+}
+annotation.sample <- annotation.sample %>%
+  dplyr::bind_rows(.id="Species")
+annotation.exp <- annotation.exp %>%
+  dplyr::bind_rows(.id="Species")
+
+# Download RNA-seq data per species
+rna.seq <- 
+  lapply(setNames(names(species.fish), names(species.fish)), function(s) {
+    bgee_download(species=species.fish[[s]],
+                  samples=annotation.sample$Library.ID[annotation.sample$Species==s])
+  })
+#for (s in names(species)) {
+#  rna.seq[[s]]$Anatomical.entity.name <-
+#    gsub(" ","_", rna.seq[[s]]$Anatomical.entity.name)
+#}
+
+annotation.sample %>% saveRDS("./RDS/Bgee_fish_annotation.samples_more_fish.rds")
+annotation.exp %>% saveRDS("./RDS/Bgee_fish_annotation.exp_more_fish.rds")
+rna.seq %>% saveRDS("./RDS/Bgee_fish_rna.seq_more_fish.rds")
+```
+
+### Functions to process Bgee data
+After downloading the Bgee data I use the following function to make specific data frames, perform batch correction, and compute tissue-specificity. 
+```{r}
+#Get number of tissues
+no_of_tissue_samples_in_each_fish<-function(x){
+  bgee_dat %>% dplyr::filter(Anatomical.entity.name == x) %>% dplyr::group_by(Species) %>% dplyr::summarise(Libraries = length(unique(Library.ID)))
+}
+
+#Make the expression matrix data frame
+make_exp_data_frames_Read.count<-function(.data, ...){
+  .data %>% filter(Library.ID %in% bgee_dat$Library.ID) %>% 
+    dplyr::select(Gene.ID, Read.count, Library.ID) %>% 
+    pivot_wider(names_from = Library.ID,values_from = Read.count)
+  }
+
+TMM_norm_only<-function(.data){
+  library(edgeR)
+
+#TMM norm
+   #design matix
+  design_matrix<-.data %>% filter(Library.ID %in% bgee_dat$Library.ID) %>% 
+                 dplyr::select(Experiment.ID,Library.ID,Anatomical.entity.name) %>% distinct()
+  
+  dge<-edgeR::DGEList(.data %>% make_exp_data_frames_Read.count() %>% column_to_rownames("Gene.ID"), group = factor(design_matrix$Anatomical.entity.name))
+    keep<-filterByExpr(cpm(dge), min.count = 1, group = factor(design_matrix$Anatomical.entity.name))
+    dge<-dge[keep, ,keep.lib.sizes =T]
+    dge<-calcNormFactors(dge,method = "TMM")
+    dge<-edgeR::cpm(dge, normalized.lib.sizes = T, log = F)
+    return(dge)
+    
+}
+
+#Building the tau data frame 
+build_tau_data_frame<-function(.data, var) {
+  left_join(.data %>% pivot_longer(!Gene.ID,names_to = "Library.ID",values_to = "counts"),
+            bgee_dat %>% filter(Species == {{ var }}) %>% 
+              dplyr::select(Library.ID,Anatomical.entity.name),by = "Library.ID") %>% 
+    group_by(Gene.ID,Anatomical.entity.name) %>% 
+    summarise(counts = mean(counts)) %>% 
+    spread(Anatomical.entity.name,counts)
+}
+
+#TMM with combat batch correction
+combat<-function(.data){
+  library(edgeR)
+  library(DESeq2)
+
+design_matrix<-rna.dat$Lepisosteus_oculatus %>% filter(Library.ID %in% bgee_dat$Library.ID) %>% 
+  dplyr::select(Experiment.ID,Library.ID,Anatomical.entity.name) %>% distinct()
+
+dge<-edgeR::DGEList(rna.dat$Lepisosteus_oculatus %>% make_exp_data_frames_Read.count() %>% column_to_rownames("Gene.ID"), group = factor(design_matrix$Anatomical.entity.name))
+keep<-edgeR::filterByExpr(cpm(dge), min.count = 1, group = factor(design_matrix$Experiment.ID))
+dge<-dge[keep, ,keep.lib.sizes =T]
+dge<-calcNormFactors(dge,method = "TMM")
+dge<-edgeR::cpm(dge, normalized.lib.sizes = T, log = F)
+
+dge <- sva::ComBat_seq(dge, batch=design_matrix$Experiment.ID, group=NULL)
+
+
+log10(dge+1) %>% as.matrix() %>% 
+  preprocessCore::normalize.quantiles(as.matrix(.data),keep.names = T)->m
+
+colData<-DataFrame(experiment = design_matrix$Experiment.ID,
+                   tissue =  design_matrix$Anatomical.entity.name)
+
+se<-SummarizedExperiment::SummarizedExperiment(m - rowMeans(m),colData = colData)
+pcaDat<-plotPCA(DESeqTransform(se),intgroup = c("tissue","experiment"), ntop = 10000, returnData=T)
+percentVar_all<-round(100 * attr(pcaDat,"percentVar"))
+
+plot<-ggplot(pcaDat,aes(PC1,PC2,color = experiment,label = tissue))+
+  geom_text()+
+  theme_light()+
+  xlab(paste0("PC1 (",percentVar_all[1],"%)")) +
+  ylab(paste0("PC2 (",percentVar_all[2],"%)"))
+
+
+return(dge) #use to make data frame
+#return(plot) #use to see PCA after combat
+}
+
+#TMM nnormalisation plus batch correction for different experiment and visualising the pca
+norm_pca<-function(.data){
+  library(edgeR)
+  library(DESeq2)
+
+design_matrix<-.data %>% filter(Library.ID %in% bgee_dat$Library.ID) %>% 
+  dplyr::select(Experiment.ID,Library.ID,Anatomical.entity.name) %>% distinct()
+
+dge<-edgeR::DGEList(.data %>% make_exp_data_frames_Read.count() %>% column_to_rownames("Gene.ID"), group = factor(design_matrix$Anatomical.entity.name))
+keep<-filterByExpr(cpm(dge), min.count = 1, group = factor(design_matrix$Experiment.ID))
+dge<-dge[keep, ,keep.lib.sizes =T]
+dge<-calcNormFactors(dge,method = "TMM")
+dge<-edgeR::cpm(dge, normalized.lib.sizes = T, log = F)
+
+
+log10(dge+1) %>% 
+  as.matrix() %>% 
+  preprocessCore::normalize.quantiles(as.matrix(.data),keep.names = T)->m
+
+colData<-DataFrame(experiment = design_matrix$Experiment.ID,
+                   tissue =  design_matrix$Anatomical.entity.name)
+
+se<-SummarizedExperiment::SummarizedExperiment(m - rowMeans(m),colData = colData)
+pcaDat<-plotPCA(DESeqTransform(se),intgroup = c("tissue","experiment"), ntop = 10000, returnData=T)
+percentVar_all<-round(100 * attr(pcaDat,"percentVar"))
+
+plot<-ggplot(pcaDat,aes(PC1,PC2,color = experiment,label = tissue))+
+  geom_text()+
+  theme_light()+
+  xlab(paste0("PC1 (",percentVar_all[1],"%)")) +
+  ylab(paste0("PC2 (",percentVar_all[2],"%)"))
+
+return(plot)
+}
+
+#Compute tau
+compute_tau<-function(.data,tissue){
+  
+  # tau equation
+  get_tau <- function(.data) {
+  # Takes mean expression matrix
+  tau <- apply(.data, MARGIN=1, function(row) {
+    max <- max(row)
+    exp.norm <- row/max
+    numerator <- sum(1-exp.norm)
+    conditions <- ncol(.data)
+    numerator/(conditions-1)
+  })
+  
+  names(tau) <- rownames(.data)
+  return(tau)
+  
+  } 
+    (.data %>% column_to_rownames("Gene.ID")) %>% 
+      get_tau() %>% as_tibble(rownames = NA) %>% 
+      rownames_to_column("Gene.ID") %>% 
+      dplyr::rename(tau=value) %>% return()->tau_estimate
+  
+
+  #running on input data frame to create final output with left join to original data frame. Prepares
+  #final output of tau >=0.8 (strict threshold) and gene whose expression is 
+  #higher than the sum of all other tissues
+  left_join(tau_estimate,.data,by="Gene.ID") %>% 
+    filter(tau >= 0.8) %>% 
+    dplyr::mutate(m = rowSums(across(!c(Gene.ID,tau,tissue)))) %>% 
+    dplyr::filter(.data[[tissue]] > m) %>% 
+    dplyr::select(!m) %>% 
+    return()
+}
+
+```
+
+### Load the data
+Here I load all the data downloaded from Bgee
+```{r,eval=T}
+#read required data
+#select the following stages
+stages = c("life cycle", "late adult stage","post-juvenile","prime adult stage", "sexually immature stage", "post-juvenile")
+bgee_dat<-readRDS("./RDS/Bgee_fish_annotation.samples_more_fish.rds") %>% filter(Stage.name %in% stages)
+
+#read all Bgee dat for above species, tissues, and stages
+rna.dat<-readRDS("./RDS/Bgee_fish_rna.seq_more_fish.rds")
+```
+
+### Get tissue distribution data
+I see that data for caudal fin and swim bladder are only in two species, and intestine is only in four species. Therefore I will not use them for analysis.
+```{r,eval=TRUE}
+tissue_name<-c("brain","camera-type eye","caudal fin","head kidney","heart","intestine","liver","mesonephros","muscle tissue","ovary","pharyngeal gill","spleen","swim bladder","testis","zone of skin")
+
+purrr::map(tissue_name,no_of_tissue_samples_in_each_fish)->d
+names(d)<-tissue_name
+d
+```
+
+### Normalisation PCA
+Since the data in bgee sometimes includes tissue expression data from multiple experiments, I need to check the data to determine whether it needs any specific batch correction. 
+The effect of different experiments in only prevalent in *Lepisosteus_oculatus*. Tissues of other species cluster generally together irrespective of experiment.  
+```{r,warning=FALSE,message=FALSE}
+purrr::map(rna.dat,norm_pca)
+```
+
+### Counts normalisation
+I run the TMM normalisation function and build the data frame that will be the input to compute tau.
+```{r,eval=F}
+#build_tau_dataframe
+Astatotilapia_calliptera_tau_input<-rna.dat$Astatotilapia_calliptera %>% TMM_norm_only() %>% as_tibble(rownames = NA) %>% rownames_to_column("Gene.ID") %>% build_tau_data_frame(var = "Astatotilapia_calliptera")
+
+Astyanax_mexicanus_tau_input<-rna.dat$Astyanax_mexicanus %>% TMM_norm_only() %>% as_tibble(rownames = NA) %>% rownames_to_column("Gene.ID") %>% build_tau_data_frame(var = "Astyanax_mexicanus")
+
+Danio_rerio_tau_input<-rna.dat$Danio_rerio %>% TMM_norm_only %>% as_tibble(rownames = NA) %>% rownames_to_column("Gene.ID") %>% build_tau_data_frame(var = "Danio_rerio")
+
+Esox_lucius_tau_input<-rna.dat$Esox_lucius %>% TMM_norm_only %>% as_tibble(rownames = NA) %>% rownames_to_column("Gene.ID") %>% build_tau_data_frame(var = "Esox_lucius")
+
+Gasterosteus_aculeatus_tau_input<-rna.dat$Gasterosteus_aculeatus %>% TMM_norm_only() %>% as_tibble(rownames = NA) %>% rownames_to_column("Gene.ID") %>% build_tau_data_frame(var = "Gasterosteus_aculeatus")
+
+Gadus_morhua_tau_input<-rna.dat$Gadus_morhua %>% TMM_norm_only %>% as_tibble(rownames = NA) %>% rownames_to_column("Gene.ID") %>% build_tau_data_frame(var = "Gadus_morhua")
+
+Lepisosteus_oculatus_tau_input<-rna.dat$Lepisosteus_oculatus %>% combat() %>% as_tibble(rownames = NA) %>% rownames_to_column("Gene.ID") %>% build_tau_data_frame(var = "Lepisosteus_oculatus") #Performed combat
+
+Neolamprologus_brichardi_tau_input<-rna.dat$Neolamprologus_brichardi%>% TMM_norm_only() %>% as_tibble(rownames = NA) %>% rownames_to_column("Gene.ID") %>% build_tau_data_frame(var = "Neolamprologus_brichardi")
+
+Nothobranchius_furzeri_tau_input<-rna.dat$Nothobranchius_furzeri %>% TMM_norm_only() %>% as_tibble(rownames = NA) %>% rownames_to_column("Gene.ID") %>% build_tau_data_frame(var = "Nothobranchius_furzeri")
+
+Oryzias_latipes_tau_input<-rna.dat$Oryzias_latipes %>% TMM_norm_only() %>% as_tibble(rownames = NA) %>% rownames_to_column("Gene.ID") %>% build_tau_data_frame(var = "Oryzias_latipes")
+
+Salmo_salar_tau_input<-rna.dat$Salmo_salar %>% TMM_norm_only() %>% as_tibble(rownames = NA) %>% rownames_to_column("Gene.ID") %>% build_tau_data_frame(var = "Salmo_salar")
+
+Scophthalmus_maximus_tau_input<-rna.dat$Scophthalmus_maximus %>% TMM_norm_only() %>% as_tibble(rownames = NA) %>% rownames_to_column("Gene.ID") %>% build_tau_data_frame(var = "Scophthalmus_maximus")
+
+list(Astyanax_mexicanus_tau_input = Astyanax_mexicanus_tau_input,
+     Astatotilapia_calliptera_tau_input = Astatotilapia_calliptera_tau_input,
+     Danio_rerio_tau_input = Danio_rerio_tau_input,
+     Esox_lucius_tau_input = Esox_lucius_tau_input,
+     Gasterosteus_aculeatus_tau_input = Gasterosteus_aculeatus_tau_input,
+     Gadus_morhua_tau_input = Gadus_morhua_tau_input,
+     Lepisosteus_oculatus_tau_input = Lepisosteus_oculatus_tau_input,
+     Neolamprologus_brichardi_tau_input = Neolamprologus_brichardi_tau_input,
+     Nothobranchius_furzeri_tau_input = Nothobranchius_furzeri_tau_input,
+     Oryzias_latipes_tau_input = Oryzias_latipes_tau_input,
+     Salmo_salar_tau_input = Salmo_salar_tau_input,
+     Scophthalmus_maximus_tau_input = Scophthalmus_maximus_tau_input) %>% saveRDS("./RDS/Tau_input_dat_TMM_cpm_no_log_no_combat_all_fish.rds")
+
+```
+
+### Correcting for batch effect
+I checked for potential batch effects in tissue expression between different experiments and found evidence only in *Lepisosteus oculatus*. I then corrected this using the *ComBat_seq* function from the sva R package followed by quantile normalisation.
+(A) Original data. 
+(B) Batch corrected data
+
+```{r,out.width="70%",out.height="75%"}
+knitr::include_graphics("./Supplementary_material/FigS9_Gar_expression_correction.png")
+```
+
+### Compute Tau
+To estimate tissue specificity I used the tissue-specificity index Tau. The code below calculates tau for each tissue in each sampled species. I classify a gene as tissue-specific if it has a tau estimate above 0.8 and its mean expression level in the target tissue is higher than the sum of its expression in all the other tissues. This ensures we keep only those genes that are tissue-specific and highly expressed in their target tissues. 
+```{r,eval=F}
+tau_input<-readRDS("./RDS/Tau_input_dat_TMM_cpm_no_log_no_combat_all_fish.rds")
+#tau_input2<-readRDS("./RDS/Tau_input_dat_Counts_post_combat.rds")
+
+#remove unwanted and ambiguous tissues (e.g. larva, immature organism etc..)
+
+tau_input$Astatotilapia_calliptera_tau_input %>% dplyr::select(!c(`multicellular organism`))->tau_input$Astatotilapia_calliptera_tau_input
+tau_input$Danio_rerio_tau_input %>% dplyr::select(!c(`mature ovarian follicle`))->tau_input$Danio_rerio_tau_input
+tau_input$Esox_lucius_tau_input %>% dplyr::select(!`embryo`)->tau_input$Esox_lucius_tau_input
+tau_input$Gadus_morhua_tau_input %>% dplyr::select(!c(`embryo`,`sexually immature organism`,`immune organ`))->tau_input$Gadus_morhua_tau_input
+tau_input$Gasterosteus_aculeatus_tau_input %>% dplyr::select(!c(`telencephalon`,`diencephalon`))->tau_input$Gasterosteus_aculeatus_tau_input
+tau_input$Oryzias_latipes_tau_input %>% dplyr::select(!c(`multicellular organism`,`sexually immature organism`,`adult organism`))->tau_input$Oryzias_latipes_tau_input
+tau_input$Salmo_salar_tau_input %>% dplyr::select(!c(semen, `sexually immature organism`))->tau_input$Salmo_salar_tau_input
+
+
+# Skin
+tau_input$Astatotilapia_calliptera_tau_input %>% compute_tau(tissue = "zone of skin")->Astatotilapia_calliptera_tau
+tau_input$Astyanax_mexicanus_tau_input %>% compute_tau(tissue = "zone of skin")->Astyanax_mexicanus_tau
+tau_input$Danio_rerio_tau_input %>% compute_tau(tissue = "zone of skin")->Danio_rerio_tau
+tau_input$Gasterosteus_aculeatus_tau_input %>% compute_tau(tissue = "zone of skin")->Gasterosteus_aculeatus_tau
+tau_input$Lepisosteus_oculatus_tau_input %>% compute_tau(tissue = "zone of skin")->Lepisosteus_oculatus_tau
+tau_input$Neolamprologus_brichardi_tau_input %>% compute_tau(tissue = "zone of skin")->Neolamprologus_brichardi_tau
+tau_input$Nothobranchius_furzeri_tau_input %>% compute_tau(tissue = "zone of skin")->Nothobranchius_furzeri_tau
+tau_input$Salmo_salar_tau_input %>% compute_tau(tissue = "zone of skin")->Salmo_salar_tau
+
+
+list(Astyanax_mexicanus = Astyanax_mexicanus_tau,
+     Astatotilapia_calliptera = Astatotilapia_calliptera_tau,
+     Danio_rerio = Danio_rerio_tau,
+     Gasterosteus_aculeatus= Gasterosteus_aculeatus_tau,
+     Lepisosteus_oculatus = Lepisosteus_oculatus_tau,
+     Neolamprologus_brichardi = Neolamprologus_brichardi_tau,
+     Nothobranchius_furzeri= Nothobranchius_furzeri_tau,
+     Salmo_salar = Salmo_salar_tau) %>% saveRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_skin.rds")
+
+# Brain
+tau_input$Astatotilapia_calliptera_tau_input %>% compute_tau(tissue = "brain")->Astatotilapia_calliptera_tau
+tau_input$Astyanax_mexicanus_tau_input %>% compute_tau(tissue = "brain")->Astyanax_mexicanus_tau
+tau_input$Danio_rerio_tau_input %>% compute_tau(tissue = "brain")->Danio_rerio_tau
+tau_input$Esox_lucius_tau_input %>% compute_tau(tissue = "brain")->Esox_lucius_tau
+tau_input$Gadus_morhua_tau_input %>% compute_tau(tissue = "brain")->Gadus_morhua_tau
+tau_input$Gasterosteus_aculeatus_tau_input %>% compute_tau(tissue = "brain")->Gasterosteus_aculeatus_tau
+tau_input$Lepisosteus_oculatus_tau_input %>% compute_tau(tissue = "brain")->Lepisosteus_oculatus_tau
+tau_input$Neolamprologus_brichardi_tau_input %>% compute_tau(tissue = "brain")->Neolamprologus_brichardi_tau
+tau_input$Nothobranchius_furzeri_tau_input %>% compute_tau(tissue = "brain")->Nothobranchius_furzeri_tau
+tau_input$Oryzias_latipes_tau_input %>% compute_tau(tissue = "brain")->Oryzias_latipes_tau
+tau_input$Salmo_salar_tau_input %>% compute_tau(tissue = "brain")->Salmo_salar_tau
+tau_input$Scophthalmus_maximus_tau_input %>% compute_tau(tissue = "brain")->Scophthalmus_maximus_tau
+
+
+list(Astyanax_mexicanus = Astyanax_mexicanus_tau,
+     Astatotilapia_calliptera = Astatotilapia_calliptera_tau,
+     Danio_rerio = Danio_rerio_tau,
+     Esox_lucius = Esox_lucius_tau,
+     Gadus_morhua = Gadus_morhua_tau,
+     Gasterosteus_aculeatus= Gasterosteus_aculeatus_tau,
+     Lepisosteus_oculatus = Lepisosteus_oculatus_tau,
+     Neolamprologus_brichardi = Neolamprologus_brichardi_tau,
+     Nothobranchius_furzeri= Nothobranchius_furzeri_tau,
+     Oryzias_latipes = Oryzias_latipes_tau,
+     Salmo_salar = Salmo_salar_tau,
+     Scophthalmus_maximus = Scophthalmus_maximus_tau) %>% saveRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_brain.rds")
+
+# Eye
+tau_input$Astatotilapia_calliptera_tau_input %>% compute_tau(tissue = "camera-type eye")->Astatotilapia_calliptera_tau 
+tau_input$Astyanax_mexicanus_tau_input %>% compute_tau(tissue = "camera-type eye")->Astyanax_mexicanus_tau
+tau_input$Esox_lucius_tau_input %>% compute_tau(tissue = "camera-type eye")->Esox_lucius_tau
+tau_input$Gasterosteus_aculeatus_tau_input %>% compute_tau(tissue = "camera-type eye")->Gasterosteus_aculeatus_tau
+tau_input$Lepisosteus_oculatus_tau_input %>% compute_tau(tissue = "camera-type eye")->Lepisosteus_oculatus_tau
+tau_input$Neolamprologus_brichardi_tau_input %>% compute_tau(tissue = "camera-type eye")->Neolamprologus_brichardi_tau
+tau_input$Salmo_salar_tau_input %>% compute_tau(tissue = "camera-type eye")->Salmo_salar_tau
+
+list(Astyanax_mexicanus = Astyanax_mexicanus_tau,
+     Astatotilapia_calliptera = Astatotilapia_calliptera_tau,
+     Esox_lucius = Esox_lucius_tau,
+     Gasterosteus_aculeatus= Gasterosteus_aculeatus_tau,
+     Lepisosteus_oculatus = Lepisosteus_oculatus_tau,
+     Neolamprologus_brichardi = Neolamprologus_brichardi_tau,
+     Salmo_salar = Salmo_salar_tau) %>% 
+  saveRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_eye.rds")
+
+# Heart
+tau_input$Astyanax_mexicanus_tau_input %>% compute_tau(tissue = "heart")->Astyanax_mexicanus_tau
+tau_input$Danio_rerio_tau_input %>% compute_tau(tissue = "heart")->Danio_rerio_tau
+tau_input$Esox_lucius_tau_input %>% compute_tau(tissue = "heart")->Esox_lucius_tau
+tau_input$Gadus_morhua_tau_input %>% compute_tau(tissue = "heart")->Gadus_morhua_tau
+tau_input$Gasterosteus_aculeatus_tau_input %>% compute_tau(tissue = "heart")->Gasterosteus_aculeatus_tau
+tau_input$Lepisosteus_oculatus_tau_input %>% compute_tau(tissue = "heart")->Lepisosteus_oculatus_tau
+tau_input$Neolamprologus_brichardi_tau_input %>% compute_tau(tissue = "heart")->Neolamprologus_brichardi_tau
+tau_input$Oryzias_latipes_tau_input %>% compute_tau(tissue = "heart")->Oryzias_latipes_tau
+tau_input$Salmo_salar_tau_input %>% compute_tau(tissue = "heart")->Salmo_salar_tau
+
+
+list(Astyanax_mexicanus = Astyanax_mexicanus_tau,
+     Danio_rerio = Danio_rerio_tau,
+     Esox_lucius = Esox_lucius_tau,
+     Gadus_morhua = Gadus_morhua_tau,
+     Gasterosteus_aculeatus= Gasterosteus_aculeatus_tau,
+     Lepisosteus_oculatus = Lepisosteus_oculatus_tau,
+     Neolamprologus_brichardi = Neolamprologus_brichardi_tau,
+     Oryzias_latipes = Oryzias_latipes_tau,
+     Salmo_salar = Salmo_salar_tau) %>% saveRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_heart.rds")
+
+# Liver
+tau_input$Astatotilapia_calliptera_tau_input %>% compute_tau(tissue = "liver")->Astatotilapia_calliptera_tau 
+tau_input$Astyanax_mexicanus_tau_input %>% compute_tau(tissue = "liver")->Astyanax_mexicanus_tau
+tau_input$Danio_rerio_tau_input %>% compute_tau(tissue = "liver")->Danio_rerio_tau
+tau_input$Esox_lucius_tau_input %>% compute_tau(tissue = "liver")->Esox_lucius_tau
+tau_input$Gadus_morhua_tau_input %>% compute_tau(tissue = "liver")->Gadus_morhua_tau
+tau_input$Gasterosteus_aculeatus_tau_input %>% compute_tau(tissue = "liver")->Gasterosteus_aculeatus_tau
+tau_input$Lepisosteus_oculatus_tau_input %>% compute_tau(tissue = "liver")->Lepisosteus_oculatus_tau
+tau_input$Neolamprologus_brichardi_tau_input %>% compute_tau(tissue = "liver")->Neolamprologus_brichardi_tau
+tau_input$Nothobranchius_furzeri_tau_input %>% compute_tau(tissue = "liver")->Nothobranchius_furzeri_tau
+tau_input$Oryzias_latipes_tau_input %>% compute_tau(tissue = "liver")->Oryzias_latipes_tau
+tau_input$Salmo_salar_tau_input %>% compute_tau(tissue = "liver")->Salmo_salar_tau
+tau_input$Scophthalmus_maximus_tau_input %>% compute_tau(tissue = "liver")->Scophthalmus_maximus_tau
+
+
+list(Astyanax_mexicanus = Astyanax_mexicanus_tau,
+     Astatotilapia_calliptera = Astatotilapia_calliptera_tau,
+     Danio_rerio = Danio_rerio_tau,
+     Esox_lucius = Esox_lucius_tau,
+     Gadus_morhua = Gadus_morhua_tau,
+     Gasterosteus_aculeatus= Gasterosteus_aculeatus_tau,
+     Lepisosteus_oculatus = Lepisosteus_oculatus_tau,
+     Neolamprologus_brichardi = Neolamprologus_brichardi_tau,
+     Nothobranchius_furzeri= Nothobranchius_furzeri_tau,
+     Oryzias_latipes = Oryzias_latipes_tau,
+     Salmo_salar = Salmo_salar_tau,
+     Scophthalmus_maximus = Scophthalmus_maximus_tau) %>% saveRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_liver.rds")
+
+# Muscle tissue
+tau_input$Astatotilapia_calliptera_tau_input %>% compute_tau(tissue = "muscle tissue")->Astatotilapia_calliptera_tau 
+tau_input$Astyanax_mexicanus_tau_input %>% compute_tau(tissue = "muscle tissue")->Astyanax_mexicanus_tau
+tau_input$Danio_rerio_tau_input %>% compute_tau(tissue = "muscle tissue")->Danio_rerio_tau
+tau_input$Esox_lucius_tau_input %>% compute_tau(tissue = "muscle tissue")->Esox_lucius_tau
+tau_input$Gadus_morhua_tau_input %>% compute_tau(tissue = "muscle tissue")->Gadus_morhua_tau
+tau_input$Gasterosteus_aculeatus_tau_input %>% compute_tau(tissue = "muscle tissue")->Gasterosteus_aculeatus_tau
+tau_input$Lepisosteus_oculatus_tau_input %>% compute_tau(tissue = "muscle tissue")->Lepisosteus_oculatus_tau
+tau_input$Neolamprologus_brichardi_tau_input %>% compute_tau(tissue = "skeletal muscle tissue")->Neolamprologus_brichardi_tau
+tau_input$Oryzias_latipes_tau_input %>% compute_tau(tissue = "muscle tissue")->Oryzias_latipes_tau
+tau_input$Salmo_salar_tau_input %>% compute_tau(tissue = "muscle tissue")->Salmo_salar_tau
+tau_input$Scophthalmus_maximus_tau_input %>% compute_tau(tissue = "muscle tissue")->Scophthalmus_maximus_tau
+
+
+list(Astyanax_mexicanus = Astyanax_mexicanus_tau,
+     Astatotilapia_calliptera = Astatotilapia_calliptera_tau,
+     Danio_rerio = Danio_rerio_tau,
+     Esox_lucius = Esox_lucius_tau,
+     Gadus_morhua = Gadus_morhua_tau,
+     Gasterosteus_aculeatus= Gasterosteus_aculeatus_tau,
+     Lepisosteus_oculatus = Lepisosteus_oculatus_tau,
+     Neolamprologus_brichardi = Neolamprologus_brichardi_tau,
+     Oryzias_latipes = Oryzias_latipes_tau,
+     Salmo_salar = Salmo_salar_tau,
+     Scophthalmus_maximus = Scophthalmus_maximus_tau) %>% saveRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_muscle.rds")
+
+# Ovary
+tau_input$Astatotilapia_calliptera_tau_input %>% compute_tau(tissue = "ovary")->Astatotilapia_calliptera_tau
+tau_input$Astyanax_mexicanus_tau_input %>% compute_tau(tissue = "ovary")->Astyanax_mexicanus_tau
+tau_input$Danio_rerio_tau_input %>% compute_tau(tissue = "ovary")->Danio_rerio_tau
+tau_input$Esox_lucius_tau_input %>% compute_tau(tissue = "ovary")->Esox_lucius_tau
+tau_input$Gadus_morhua_tau_input %>% compute_tau(tissue = "ovary")->Gadus_morhua_tau
+tau_input$Lepisosteus_oculatus_tau_input %>% compute_tau(tissue = "ovary")->Lepisosteus_oculatus_tau
+tau_input$Oryzias_latipes_tau_input %>% compute_tau(tissue = "ovary")->Oryzias_latipes_tau
+tau_input$Salmo_salar_tau_input %>% compute_tau(tissue = "ovary")->Salmo_salar_tau
+
+
+list(Astyanax_mexicanus = Astyanax_mexicanus_tau,
+     Astatotilapia_calliptera = Astatotilapia_calliptera_tau,
+     Danio_rerio = Danio_rerio_tau,
+     Esox_lucius = Esox_lucius_tau,
+     Gadus_morhua = Gadus_morhua_tau,
+     Lepisosteus_oculatus = Lepisosteus_oculatus_tau,
+     Oryzias_latipes = Oryzias_latipes_tau,
+     Salmo_salar = Salmo_salar_tau) %>% saveRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_ovary.rds")
+
+# Testis
+tau_input$Astatotilapia_calliptera_tau_input %>% compute_tau(tissue = "testis")->Astatotilapia_calliptera_tau 
+tau_input$Astyanax_mexicanus_tau_input %>% compute_tau(tissue = "testis")->Astyanax_mexicanus_tau
+tau_input$Danio_rerio_tau_input %>% compute_tau(tissue = "testis")->Danio_rerio_tau
+tau_input$Esox_lucius_tau_input %>% compute_tau(tissue = "testis")->Esox_lucius_tau
+tau_input$Gadus_morhua_tau_input %>% compute_tau(tissue = "testis")->Gadus_morhua_tau
+tau_input$Gasterosteus_aculeatus_tau_input %>% compute_tau(tissue = "testis")->Gasterosteus_aculeatus_tau
+tau_input$Lepisosteus_oculatus_tau_input %>% compute_tau(tissue = "testis")->Lepisosteus_oculatus_tau
+tau_input$Neolamprologus_brichardi_tau_input %>% compute_tau(tissue = "testis")->Neolamprologus_brichardi_tau
+tau_input$Oryzias_latipes_tau_input %>% compute_tau(tissue = "testis")->Oryzias_latipes_tau
+tau_input$Salmo_salar_tau_input %>% compute_tau(tissue = "testis")->Salmo_salar_tau
+
+list(Astyanax_mexicanus = Astyanax_mexicanus_tau,
+     Astatotilapia_calliptera = Astatotilapia_calliptera_tau,
+     Danio_rerio = Danio_rerio_tau,
+     Esox_lucius = Esox_lucius_tau,
+     Gadus_morhua = Gadus_morhua_tau,
+     Gasterosteus_aculeatus= Gasterosteus_aculeatus_tau,
+     Lepisosteus_oculatus = Lepisosteus_oculatus_tau,
+     Neolamprologus_brichardi = Neolamprologus_brichardi_tau,
+     Oryzias_latipes = Oryzias_latipes_tau,
+     Salmo_salar = Salmo_salar_tau) %>% saveRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_testis.rds")
+
+```
+
+
+### Plot tissue specific genes
+Here are the distribution of the tissue specific genes across the different teleost species. 
+```{r,eval=T}
+#tissue specific genes
+skin<-readRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_skin.rds")
+brain<-readRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_brain.rds") 
+eye<-readRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_eye.rds") 
+heart<-readRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_heart.rds") 
+liver<-readRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_liver.rds") 
+muscle<-readRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_muscle.rds") 
+ovary<-readRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_ovary.rds") 
+testis<-readRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_testis.rds") 
+
+
+
+ts_plot<-function(species){
+rbind(tibble(ts = length(brain[[species]]$Gene.ID),
+       tissue = "brain"),
+tibble(ts = length(eye[[species]]$Gene.ID),
+       tissue = "eye"),
+tibble(ts = length(heart[[species]]$Gene.ID),
+       tissue = "heart"),
+tibble(ts = length(liver[[species]]$Gene.ID),
+       tissue = "liver"),
+tibble(ts = length(muscle[[species]]$Gene.ID),
+       tissue = "muscle"),
+tibble(ts = length(skin[[species]]$Gene.ID),
+       tissue = "skin"),
+tibble(ts = length(ovary[[species]]$Gene.ID),
+       tissue = "ovary"),
+tibble(ts = length(testis[[species]]$Gene.ID),
+       tissue = "testis"))->ts_df
+
+p<-ggpubr::ggbarplot(ts_df, x = "tissue", y = "ts",fill = "grey",color = "grey",label = T,lab.pos = "out",lab.col = "darkred")+
+  ggpubr::rremove("legend")+
+  ggpubr::rremove("xlab")+
+  ggpubr::rremove("ylab")+
+  ggtitle(str_replace(species,pattern = "_",replacement = " "))+
+  theme(plot.title = element_text(hjust = 0.5,vjust = -0.5,face = "italic")) %>% return() # Center the title
+#ggpubr::ggpar(p,title = str_replace(species,pattern = "_",replacement = " "),font.title = c(14,"italic","black"),title.position = "center") %>% return()
+}
+
+purrr::map(names(brain),ts_plot)->plot_list
+```
+
+```{r,fig.dim=c(10,50)}
+ggpubr::ggarrange(plotlist = plot_list,ncol = 1,nrow = 12)
+```
+
+### Session Info
+```{r print-session-info_get_bgee}
+sessionInfo()
+```
