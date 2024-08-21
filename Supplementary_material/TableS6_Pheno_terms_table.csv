@@ -1,0 +1,206 @@
+Affected Structure or Process 1 superterm Name,Publication ID,Gene_symbol,tissue_system
+optic nerve head,ZDB-PUB-090106-20,alcama,Nervous
+eye,ZDB-PUB-090106-20,alcama,Nervous
+cranial nerve II,ZDB-PUB-090106-20,alcama,Nervous
+neuron differentiation,ZDB-PUB-090106-20,alcama,Nervous
+Meckel's cartilage,ZDB-PUB-101122-3,alcama,Skeletal
+ceratohyal cartilage,ZDB-PUB-101122-3,alcama,Skeletal
+interhyal cartilage,ZDB-PUB-101122-3,alcama,Skeletal
+retina morphogenesis in camera-type eye,ZDB-PUB-090106-20,alcama,Nervous
+retinal rod cell differentiation,ZDB-PUB-090106-20,alcama,Nervous
+amacrine cell,ZDB-PUB-090106-20,alcama,Nervous
+cardiac ventricle,ZDB-PUB-190405-15,alcama,Circulatory
+retinal ganglion cell,ZDB-PUB-090106-20,alcama,Nervous
+whole organism,ZDB-PUB-190405-15,alcama,Whole organism
+pharyngeal pouch,ZDB-PUB-130213-8,alcama,Skeletal
+heart looping,ZDB-PUB-130410-19,alcama,Circulatory
+retinal ganglion cell layer,ZDB-PUB-090106-20,alcama,Nervous
+swim bladder,ZDB-PUB-101122-3,alcama,Digestive
+retinal inner nuclear layer,ZDB-PUB-090106-20,alcama,Nervous
+retinal neural layer,ZDB-PUB-090106-20,alcama,Nervous
+pericardium,ZDB-PUB-101122-3,alcama,Circulatory
+pericardial cavity,ZDB-PUB-090106-20,alcama,Circulatory
+ventral mandibular arch,ZDB-PUB-090106-20,alcama,Skeletal
+splanchnocranium,ZDB-PUB-101122-3,alcama,Skeletal
+trunk,ZDB-PUB-080422-3,pax3a,Skeletal
+head,ZDB-PUB-080422-3,pax3a,Skeletal
+xanthophore differentiation,ZDB-PUB-080422-3,pax3a,Skin
+dorsal root ganglion,ZDB-PUB-080422-3,pax3a,Nervous
+neural plate,ZDB-PUB-080422-3,pax3a,Nervous
+cranial neural crest cell,ZDB-PUB-080422-3,pax3a,Nervous
+trunk neural crest cell,ZDB-PUB-080422-3,pax3a,Nervous
+sternohyoid,ZDB-PUB-090505-16,pax3a,Skeletal
+melanocyte differentiation,ZDB-PUB-080422-3,pax3a,Skin
+pharyngeal arch,ZDB-PUB-090505-16,pax3a,Nervous
+enteric nervous system,ZDB-PUB-080422-3,pax3a,Nervous
+ventral rectus,ZDB-PUB-090505-16,pax3a,Skeletal
+cranial neural crest,ZDB-PUB-080422-3,pax3a,Nervous
+neural crest cell,ZDB-PUB-080422-3,pax3a,Nervous
+melanoblast,ZDB-PUB-080422-3,pax3a,Skin
+presumptive enteric nervous system,ZDB-PUB-080422-3,pax3a,Nervous
+neural crest cell migration,ZDB-PUB-080422-3,pax3a,Nervous
+enteric nervous system development,ZDB-PUB-080422-3,pax3a,Nervous
+xanthophore,ZDB-PUB-080422-3,pax3a,Skin
+melanophore stripe,ZDB-PUB-080422-3,pax3a,Skin
+medial rectus,ZDB-PUB-090505-16,pax3a,Skeletal
+pronephric podocyte,ZDB-PUB-170607-8,brca2,Excretory
+pronephric glomerulus development,ZDB-PUB-170607-8,brca2,Excretory
+podocyte,ZDB-PUB-180502-5,brca2,Excretory
+interrenal primordium,ZDB-PUB-180502-5,brca2,Excretory
+spermatocyte,ZDB-PUB-101027-46,brca2,Reproductive
+pronephros,ZDB-PUB-170607-8,brca2,Excretory
+female gonad development,ZDB-PUB-101027-46,brca2,Reproductive
+male meiotic nuclear division,ZDB-PUB-101027-46,brca2,Reproductive
+ovary,ZDB-PUB-101027-46,brca2,Reproductive
+spermatogenesis,ZDB-PUB-101027-46,brca2,Reproductive
+female sex determination,ZDB-PUB-101027-46,brca2,Reproductive
+testis,ZDB-PUB-101027-46,brca2,Reproductive
+heart,ZDB-PUB-170607-8,brca2,Circulatory
+female organism,ZDB-PUB-181213-8,brca2,Reproductive
+male organism,ZDB-PUB-181213-8,brca2,Reproductive
+male sex determination,ZDB-PUB-181213-8,brca2,Reproductive
+whole organism,ZDB-PUB-170607-8,brca2,Whole organism
+pericardium,ZDB-PUB-180502-5,brca2,Circulatory
+pleuroperitoneal cavity,ZDB-PUB-180502-5,brca2,Skeletal
+whole organism,ZDB-PUB-200424-6,nipblb,Whole organism
+caudal hematopoietic tissue,ZDB-PUB-190113-12,nipblb,Skeletal
+eye,ZDB-PUB-131119-22,nipblb,Nervous
+post-vent region,ZDB-PUB-131119-22,nipblb,Skeletal
+brain,ZDB-PUB-131119-22,nipblb,Nervous
+neural tube,ZDB-PUB-150725-3,nipblb,Nervous
+cell population proliferation,ZDB-PUB-150725-3,nipblb,Cell process
+hematopoietic stem cell,ZDB-PUB-190113-12,nipblb,Circulatory
+nucleate erythrocyte,ZDB-PUB-200424-6,nipblb,Circulatory
+central nervous system development,ZDB-PUB-131119-22,nipblb,Nervous
+regulation of canonical Wnt signaling pathway,ZDB-PUB-131119-22,nipblb,Cell process
+ventral wall of dorsal aorta,ZDB-PUB-200424-6,nipblb,Circulatory
+apoptotic process,ZDB-PUB-131119-22,nipblb,Cell process
+ceratobranchial cartilage,ZDB-PUB-160524-3,nansa,Skeletal
+head,ZDB-PUB-160524-3,nansa,Skeletal
+Meckel's cartilage,ZDB-PUB-160524-3,nansa,Skeletal
+pericardium,ZDB-PUB-160524-3,nansa,Circulatory
+ethmoid cartilage,ZDB-PUB-160524-3,nansa,Skeletal
+palatoquadrate cartilage,ZDB-PUB-160524-3,nansa,Skeletal
+embryonic skeletal system development,ZDB-PUB-160524-3,nansa,Skeletal
+parachordal cartilage,ZDB-PUB-160524-3,nansa,Skeletal
+basihyal cartilage,ZDB-PUB-160524-3,nansa,Skeletal
+trabecula cranii,ZDB-PUB-160524-3,nansa,Skeletal
+retinal ganglion cell axon guidance,ZDB-PUB-090106-20,alcamb,Nervous
+axonogenesis involved in innervation,ZDB-PUB-090106-20,alcamb,Nervous
+neuron differentiation,ZDB-PUB-090106-20,alcamb,Nervous
+retinal ganglion cell,ZDB-PUB-090106-20,alcamb,Nervous
+forebrain cell migration,ZDB-PUB-091221-5,alcamb,Nervous
+forebrain neural keel,ZDB-PUB-091221-5,alcamb,Nervous
+dorsal convergence,ZDB-PUB-091221-5,alcamb,Cell process
+heart contraction,ZDB-PUB-170916-10,eef1a2,Circulatory
+pericardium,ZDB-PUB-170916-10,eef1a2,Circulatory
+brain,ZDB-PUB-200118-22,eef1a2,Nervous
+heart development,ZDB-PUB-170916-10,eef1a2,Circulatory
+whole organism,ZDB-PUB-170916-10,eef1a2,Whole organism
+atrium,ZDB-PUB-170916-10,eef1a2,Circulatory
+head,ZDB-PUB-170916-10,eef1a2,Skeletal
+muscle,ZDB-PUB-200118-22,eef1a2,Skeletal
+intersegmental vessel,ZDB-PUB-180607-5,peak1,Circulatory
+dorsal longitudinal anastomotic vessel,ZDB-PUB-180607-5,peak1,Circulatory
+angiogenic sprout,ZDB-PUB-180607-5,peak1,Circulatory
+subintestinal vein,ZDB-PUB-180607-5,peak1,Circulatory
+blood circulation,ZDB-PUB-180607-5,peak1,Circulatory
+blood vessel endothelial cell,ZDB-PUB-180607-5,peak1,Circulatory
+blood,ZDB-PUB-180607-5,peak1,Circulatory
+pericardium,ZDB-PUB-180607-5,peak1,Circulatory
+whole organism,ZDB-PUB-180607-5,peak1,Whole organism
+ventricular system,ZDB-PUB-200910-9,chl1a,Circulatory
+trunk,ZDB-PUB-200910-9,chl1a,Skeletal
+Reissner's fiber,ZDB-PUB-200910-9,chl1a,Nervous
+subcommissural organ,ZDB-PUB-200910-9,chl1a,Nervous
+pericardium,ZDB-PUB-200910-9,chl1a,Circulatory
+whole organism,ZDB-PUB-070122-27,espl1,Whole organism
+cell population proliferation,ZDB-PUB-050913-4,espl1,Cell process
+post-vent region,ZDB-PUB-070122-27,espl1,Skeletal
+"mitotic cell cycle, embryonic",ZDB-PUB-070122-27,espl1,Cell process
+mitotic spindle organization,ZDB-PUB-070122-27,espl1,Cell process
+head,ZDB-PUB-070122-27,espl1,Skeletal
+nervous system,ZDB-PUB-060503-2,espl1,Nervous
+sternohyoid,ZDB-PUB-130709-61,pax3b,Skeletal
+esophagus,ZDB-PUB-130709-61,pax3b,Digestive
+pectoral fin musculature,ZDB-PUB-130709-61,pax3b,Skeletal
+branchiomeric skeletal muscle development,ZDB-PUB-130709-61,pax3b,Skeletal
+mastication,ZDB-PUB-130709-61,pax3b,Digestive
+endocrine pancreas,ZDB-PUB-160311-1,pepd,Endocrine
+enteroendocrine cell differentiation,ZDB-PUB-160311-1,pepd,Endocrine
+pancreatic B cell,ZDB-PUB-160311-1,pepd,Endocrine
+endocrine pancreas development,ZDB-PUB-160311-1,pepd,Endocrine
+anterior/posterior axis specification,ZDB-PUB-150203-2,poc5,Skeletal
+post-vent region,ZDB-PUB-150203-2,poc5,Skeletal
+whole organism,ZDB-PUB-150203-2,poc5,Whole organism
+eye photoreceptor cell,ZDB-PUB-171223-8,poc5,Nervous
+visual behavior,ZDB-PUB-171223-8,poc5,Nervous
+eye development,ZDB-PUB-171223-8,poc5,Nervous
+pericardium,ZDB-PUB-171223-8,poc5,Circulatory
+eye,ZDB-PUB-040708-1,eef1a1l1,Nervous
+sensory system,ZDB-PUB-060503-2,eef1a1l1,Nervous
+whole organism,ZDB-PUB-040708-1,eef1a1l1,Whole organism
+yolk,ZDB-PUB-040708-1,eef1a1l1,Digestive
+head,ZDB-PUB-040708-1,eef1a1l1,Skeletal
+gastrulation,ZDB-PUB-170721-10,ift140,Cell process
+notochord,ZDB-PUB-170721-10,ift140,Nervous
+somite,ZDB-PUB-170721-10,ift140,Skeletal
+whole organism,ZDB-PUB-170721-10,ift140,Whole organism
+liver,ZDB-PUB-101115-15,mmp23bb,Digestive
+hepatocyte proliferation,ZDB-PUB-101115-15,mmp23bb,Digestive
+cell division,ZDB-PUB-101115-15,mmp23bb,Cell process
+intermediate cell mass of mesoderm,ZDB-PUB-141230-19,nfkb2,Cell process
+trunk,ZDB-PUB-170809-8,nfkb2,Skeletal
+intersegmental vessel,ZDB-PUB-170809-8,nfkb2,Circulatory
+hatching,ZDB-PUB-180810-8,nfkb2,Cell process
+whole organism,ZDB-PUB-180810-8,nfkb2,Skeletal
+pronephric glomerulus,ZDB-PUB-170204-11,usp40,Excretory
+pronephric podocyte,ZDB-PUB-170204-11,usp40,Excretory
+whole organism,ZDB-PUB-170204-11,usp40,Whole organism
+pericardium,ZDB-PUB-170204-11,usp40,Circulatory
+pronephric glomerular basement membrane,ZDB-PUB-170204-11,usp40,Excretory
+pronephric capsular space,ZDB-PUB-170204-11,usp40,Excretory
+post-vent region,ZDB-PUB-170204-11,usp40,Skeletal
+whole organism,ZDB-PUB-201002-161,c3a.1,Whole organism
+neutrophil migration,ZDB-PUB-201002-161,c3a.1,Immune
+embryo development,ZDB-PUB-140614-2,c3a.1,Cell process
+skeletal muscle cell,ZDB-PUB-160330-7,mybpc2b,Skeletal
+skeletal muscle,ZDB-PUB-160330-7,mybpc2b,Skeletal
+trunk,ZDB-PUB-160330-7,mybpc2b,Skeletal
+whole organism,ZDB-PUB-160330-7,mybpc2b,Whole organism
+pericardium,ZDB-PUB-160330-7,mybpc2b,Circulatory
+developmental pigmentation,ZDB-PUB-080422-3,pax7a,Skin
+trunk,ZDB-PUB-080422-3,pax7a,Skeletal
+xanthophore,ZDB-PUB-080422-3,pax7a,Skin
+pectoral fin,ZDB-PUB-210827-6,pax7a,Skeletal
+head,ZDB-PUB-080422-3,pax7a,Skeletal
+cardiac ventricle,ZDB-PUB-190511-6,slc22a2,Circulatory
+heart,ZDB-PUB-190511-6,slc22a2,Circulatory
+atrium,ZDB-PUB-190511-6,slc22a2,Circulatory
+trunk vasculature,ZDB-PUB-190511-6,slc22a2,Circulatory
+determination of heart left/right asymmetry,ZDB-PUB-190511-6,slc22a2,Circulatory
+heart primordium,ZDB-PUB-180531-6,tctn2,Circulatory
+lateral plate mesoderm,ZDB-PUB-180531-6,tctn2,Cell process
+heart looping,ZDB-PUB-180531-6,tctn2,Circulatory
+determination of heart left/right asymmetry,ZDB-PUB-180531-6,tctn2,Circulatory
+head,ZDB-PUB-150624-6,ercc6,Skeletal
+post-vent region,ZDB-PUB-150624-6,ercc6,Skeletal
+trunk,ZDB-PUB-150624-6,ercc6,Skeletal
+neutrophil activation involved in immune response,ZDB-PUB-120928-15,fpr1,Immune
+microglial cell,ZDB-PUB-190216-3,mrc1b,Nervous
+startle response,ZDB-PUB-190402-7,nfkb1,Cell process
+post-vent region,ZDB-PUB-111114-19,nipbla,Skeletal
+pericardium,ZDB-PUB-111114-19,nipbla,Circulatory
+blood circulation,ZDB-PUB-111114-19,nipbla,Circulatory
+heme biosynthetic process,ZDB-PUB-090807-19,slc22a5,Circulatory
+nucleate erythrocyte,ZDB-PUB-090807-19,slc22a5,Circulatory
+motor neuron,ZDB-PUB-150811-4,sptlc3,Nervous
+whole organism,ZDB-PUB-201028-8,uba1,Whole organism
+motor neuron,ZDB-PUB-140513-428,uba1,Nervous
+neutrophil,ZDB-PUB-201028-8,uba1,Immune
+female organism,ZDB-PUB-190807-7,vtg1,Reproductive
+post-vent region,ZDB-PUB-190807-7,vtg1,Skeletal
+pericardium,ZDB-PUB-190807-7,vtg1,Circulatory
+yolk,ZDB-PUB-190807-7,vtg1,Digestive
+whole organism,ZDB-PUB-190807-7,vtg1,Whole organism
+fertilized egg,ZDB-PUB-190807-7,vtg1,Cell process
