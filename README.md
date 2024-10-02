@@ -18,7 +18,7 @@ Preprint: https://www.biorxiv.org/content/10.1101/2024.06.24.600426v1
 \
 Find a detailed report for this study [here](https://agneeshbarua.github.io/Teleost_convergence/)
 
-This is still a work in progress. All data and code have not been officially released. 
+The manuscript is under peer review. All data and code will be updated upon acceptance and final release. 
 
 
 
