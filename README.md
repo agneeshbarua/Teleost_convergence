@@ -16,7 +16,8 @@ Teleosts are the most diverse group of vertebrates on earth. Their diversity is 
 
 Preprint: https://www.biorxiv.org/content/10.1101/2024.06.24.600426v1  
 \
-Find a detailed report for this study [here](https://agneeshbarua.github.io/Teleost_convergence/)
+Find a detailed report for this study [here](https://agneeshbarua.github.io/Teleost_convergence/).  
+The report has information on the different analyses done on gene expression data along with respective code and it's explanations. 
 
 The manuscript is under peer review. All data and code will be updated upon acceptance and final release. 
 
