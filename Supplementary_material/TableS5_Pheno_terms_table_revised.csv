@@ -1,0 +1,286 @@
+Fish ID,Fish Name,Affected Structure or Process 1 superterm Name,Publication ID,Gene Symbol,tissue_system
+ZDB-FISH-150901-12823,WT + MO2-alcama,eye,ZDB-PUB-090106-20,alcama,Nervous
+ZDB-FISH-150901-20064,WT + MO1-alcama,pharyngeal pouch,ZDB-PUB-130213-8,alcama,Nervous
+ZDB-FISH-150901-21900,WT + MO1-alcama + MO1-tp53,neuron differentiation,ZDB-PUB-090106-20,alcama,Nervous
+ZDB-FISH-150901-21900,WT + MO1-alcama + MO1-tp53,retina morphogenesis in camera-type eye,ZDB-PUB-090106-20,alcama,Nervous
+ZDB-FISH-150901-21900,WT + MO1-alcama + MO1-tp53,retinal ganglion cell,ZDB-PUB-090106-20,alcama,Skeletal
+ZDB-FISH-150901-21900,WT + MO1-alcama + MO1-tp53,retinal neural layer,ZDB-PUB-090106-20,alcama,Skeletal
+ZDB-FISH-150901-21900,WT + MO1-alcama + MO1-tp53,retinal inner nuclear layer,ZDB-PUB-090106-20,alcama,Skeletal
+ZDB-FISH-150901-21900,WT + MO1-alcama + MO1-tp53,optic nerve head,ZDB-PUB-090106-20,alcama,Nervous
+ZDB-FISH-150901-21900,WT + MO1-alcama + MO1-tp53,integument,ZDB-PUB-090106-20,alcama,Nervous
+ZDB-FISH-150901-21900,WT + MO1-alcama + MO1-tp53,whole organism,ZDB-PUB-090106-20,alcama,Nervous
+ZDB-FISH-150901-21900,WT + MO1-alcama + MO1-tp53,ventral mandibular arch,ZDB-PUB-090106-20,alcama,Circulatory
+ZDB-FISH-150901-21900,WT + MO1-alcama + MO1-tp53,pericardial cavity,ZDB-PUB-090106-20,alcama,Nervous
+ZDB-FISH-150901-21900,WT + MO1-alcama + MO1-tp53,retinal ganglion cell layer,ZDB-PUB-090106-20,alcama,Whole organism
+ZDB-FISH-150901-21900,WT + MO1-alcama + MO1-tp53,cranial nerve II,ZDB-PUB-090106-20,alcama,Skeletal
+ZDB-FISH-150901-28307,WT + MO3-alcama,heart looping,ZDB-PUB-130410-19,alcama,Circulatory
+ZDB-FISH-150901-3776,WT + MO4-alcama,pericardium,ZDB-PUB-101122-3,alcama,Nervous
+ZDB-FISH-150901-3776,WT + MO4-alcama,swim bladder,ZDB-PUB-101122-3,alcama,Digestive
+ZDB-FISH-150901-3776,WT + MO4-alcama,Meckel's cartilage,ZDB-PUB-101122-3,alcama,Nervous
+ZDB-FISH-150901-3776,WT + MO4-alcama,splanchnocranium,ZDB-PUB-101122-3,alcama,Nervous
+ZDB-FISH-150901-3776,WT + MO4-alcama,ceratohyal cartilage,ZDB-PUB-101122-3,alcama,Circulatory
+ZDB-FISH-150901-3776,WT + MO4-alcama,interhyal cartilage,ZDB-PUB-101122-3,alcama,Circulatory
+ZDB-FISH-150901-4757,s356tTg + MO1-alcama + MO1-tp53,retinal rod cell differentiation,ZDB-PUB-090106-20,alcama,Skeletal
+ZDB-FISH-150901-4757,s356tTg + MO1-alcama + MO1-tp53,amacrine cell,ZDB-PUB-090106-20,alcama,Skeletal
+ZDB-FISH-191227-21,alcama<sup>bns244/bns244</sup>,cardiac ventricle,ZDB-PUB-190405-15,alcama,Circulatory
+ZDB-FISH-150901-26527,WIK/AB + MO1-alcamb,forebrain cell migration,ZDB-PUB-091221-5,alcamb,Nervous
+ZDB-FISH-150901-26527,WIK/AB + MO1-alcamb,dorsal convergence,ZDB-PUB-091221-5,alcamb,Embryo
+ZDB-FISH-150901-26527,WIK/AB + MO1-alcamb,forebrain neural keel,ZDB-PUB-091221-5,alcamb,Nervous
+ZDB-FISH-150901-26530,s356tTg + MO1-alcamb,neuron differentiation,ZDB-PUB-090106-20,alcamb,Nervous
+ZDB-FISH-150901-26530,s356tTg + MO1-alcamb,retinal ganglion cell,ZDB-PUB-090106-20,alcamb,Nervous
+ZDB-FISH-150901-26530,s356tTg + MO1-alcamb,retinal ganglion cell axon guidance,ZDB-PUB-090106-20,alcamb,Nervous
+ZDB-FISH-150901-26530,s356tTg + MO1-alcamb,axonogenesis involved in innervation,ZDB-PUB-090106-20,alcamb,Nervous
+ZDB-FISH-240703-1,arid1b<sup>y607/y607</sup>,swimming behavior,ZDB-PUB-230608-41,arid1b,Whole organism
+ZDB-FISH-240703-1,arid1b<sup>y607/y607</sup>,social behavior,ZDB-PUB-230608-41,arid1b,Whole organism
+ZDB-FISH-150901-15086,brca2<sup>hg5/hg5</sup>; tp53<sup>zdf1/+</sup>,whole organism,ZDB-PUB-140410-16,brca2,Whole organism
+ZDB-FISH-150901-15828,brca2<sup>hg5/+</sup>; tp53<sup>zdf1/zdf1</sup>,peripheral nervous system,ZDB-PUB-101027-46,brca2,Nervous
+ZDB-FISH-150901-15828,brca2<sup>hg5/+</sup>; tp53<sup>zdf1/zdf1</sup>,ovary,ZDB-PUB-101027-46,brca2,Reproductive
+ZDB-FISH-150901-17807,brca2<sup>hg5/+</sup>; tp53<sup>zdf1/+</sup>,peripheral neuron,ZDB-PUB-140410-16,brca2,Nervous
+ZDB-FISH-150901-18024,brca2<sup>zm00057434Tg</sup>,testis,ZDB-PUB-110422-1,brca2,Reproductive
+ZDB-FISH-150901-24057,brca2<sup>hg5/hg5</sup>,male meiotic nuclear division,ZDB-PUB-101027-46,brca2,Reproductive
+ZDB-FISH-150901-24057,brca2<sup>hg5/hg5</sup>,spermatogenesis,ZDB-PUB-101027-46,brca2,Reproductive
+ZDB-FISH-150901-24057,brca2<sup>hg5/hg5</sup>,female gonad development,ZDB-PUB-101027-46,brca2,Reproductive
+ZDB-FISH-150901-24057,brca2<sup>hg5/hg5</sup>,female sex determination,ZDB-PUB-101027-46,brca2,Reproductive
+ZDB-FISH-150901-24057,brca2<sup>hg5/hg5</sup>,spermatocyte,ZDB-PUB-101027-46,brca2,Reproductive
+ZDB-FISH-150901-24927,brca2<sup>hg5/hg5</sup>; tp53<sup>zdf1/zdf1</sup>,oocyte,ZDB-PUB-101027-46,brca2,Reproductive
+ZDB-FISH-150901-24927,brca2<sup>hg5/hg5</sup>; tp53<sup>zdf1/zdf1</sup>,eye,ZDB-PUB-161124-6,brca2,Nervous
+ZDB-FISH-150901-24927,brca2<sup>hg5/hg5</sup>; tp53<sup>zdf1/zdf1</sup>,coelom,ZDB-PUB-161124-6,brca2,Embryo
+ZDB-FISH-150901-491,brca2<sup>zm00057434Tg/zm00057434Tg</sup>,male organism,ZDB-PUB-110422-1,brca2,Reproductive
+ZDB-FISH-150901-491,brca2<sup>zm00057434Tg/zm00057434Tg</sup>,female organism,ZDB-PUB-110422-1,brca2,Reproductive
+ZDB-FISH-150901-491,brca2<sup>zm00057434Tg/zm00057434Tg</sup>,Sertoli cell,ZDB-PUB-110422-1,brca2,Reproductive
+ZDB-FISH-150901-491,brca2<sup>zm00057434Tg/zm00057434Tg</sup>,gonad,ZDB-PUB-110422-1,brca2,Reproductive
+ZDB-FISH-150901-491,brca2<sup>zm00057434Tg/zm00057434Tg</sup>,oocyte maturation,ZDB-PUB-110422-1,brca2,Reproductive
+ZDB-FISH-180920-32,WT + MO1-brca2,intestine,ZDB-PUB-171204-20,brca2,Digestive
+ZDB-FISH-181227-13,brca2<sup>zf1074/zf1074</sup>,pronephric glomerulus development,ZDB-PUB-170607-8,brca2,Excretory
+ZDB-FISH-181227-13,brca2<sup>zf1074/zf1074</sup>,pronephros,ZDB-PUB-170607-8,brca2,Excretory
+ZDB-FISH-181227-13,brca2<sup>zf1074/zf1074</sup>,pronephric podocyte,ZDB-PUB-170607-8,brca2,Excretory
+ZDB-FISH-181227-13,brca2<sup>zf1074/zf1074</sup>,interrenal primordium,ZDB-PUB-170607-8,brca2,Excretory
+ZDB-FISH-181227-13,brca2<sup>zf1074/zf1074</sup>,heart,ZDB-PUB-170607-8,brca2,Circulatory
+ZDB-FISH-181227-13,brca2<sup>zf1074/zf1074</sup>,podocyte,ZDB-PUB-180502-5,brca2,Excretory
+ZDB-FISH-181227-13,brca2<sup>zf1074/zf1074</sup>,pericardium,ZDB-PUB-180502-5,brca2,Circulatory
+ZDB-FISH-181227-13,brca2<sup>zf1074/zf1074</sup>,pleuroperitoneal cavity,ZDB-PUB-180502-5,brca2,Circulatory
+ZDB-FISH-181227-15,brca2<sup>zm00057434Tg/zm00057434Tg</sup>,interrenal gland,ZDB-PUB-180502-5,brca2,Excretory
+ZDB-FISH-190903-2,brca2<sup>hg45/hg45</sup>,male sex determination,ZDB-PUB-181213-8,brca2,Reproductive
+ZDB-FISH-190903-2,brca2<sup>hg45/hg45</sup>,response to xenobiotic stimulus,ZDB-PUB-181213-8,brca2,Immune
+ZDB-FISH-210608-12,brca2<sup>sh515/sh515</sup>,central nervous system,ZDB-PUB-200422-106,brca2,Nervous
+ZDB-FISH-230928-1,brca2<sup>hg5/hg5</sup>; tp53<sup>zdf1/zdf1</sup> (AB),oocyte stage II,ZDB-PUB-220120-2,brca2,Reproductive
+ZDB-FISH-230928-1,brca2<sup>hg5/hg5</sup>; tp53<sup>zdf1/zdf1</sup> (AB),oocyte stage III,ZDB-PUB-220120-2,brca2,Reproductive
+ZDB-FISH-230928-1,brca2<sup>hg5/hg5</sup>; tp53<sup>zdf1/zdf1</sup> (AB),oocyte stage I,ZDB-PUB-220120-2,brca2,Reproductive
+ZDB-FISH-230928-1,brca2<sup>hg5/hg5</sup>; tp53<sup>zdf1/zdf1</sup> (AB),oocyte stage IV,ZDB-PUB-220120-2,brca2,Reproductive
+ZDB-FISH-230928-1,brca2<sup>hg5/hg5</sup>; tp53<sup>zdf1/zdf1</sup> (AB),oocyte stage V,ZDB-PUB-220120-2,brca2,Reproductive
+ZDB-FISH-230928-1,brca2<sup>hg5/hg5</sup>; tp53<sup>zdf1/zdf1</sup> (AB),oogonia,ZDB-PUB-220120-2,brca2,Reproductive
+ZDB-FISH-230928-1,brca2<sup>hg5/hg5</sup>; tp53<sup>zdf1/zdf1</sup> (AB),optic choroid vascular plexus,ZDB-PUB-220120-2,brca2,Nervous
+ZDB-FISH-230928-1,brca2<sup>hg5/hg5</sup>; tp53<sup>zdf1/zdf1</sup> (AB),cranial nerve II,ZDB-PUB-220120-2,brca2,Nervous
+ZDB-FISH-230928-3,brca2<sup>hg5/+</sup>; tp53<sup>zdf1/+</sup> (AB),blastomere,ZDB-PUB-220120-2,brca2,Embryo
+ZDB-FISH-240325-17,brca2<sup>kh51/kh51</sup>,trunk,ZDB-PUB-210815-5,brca2,Skeletal
+ZDB-FISH-150901-4716,WT + MO1-c3a.1,embryo development,ZDB-PUB-140614-2,c3a.1,Embryo
+ZDB-FISH-150901-4716,WT + MO1-c3a.1,whole organism,ZDB-PUB-140614-2,c3a.1,Whole organism
+ZDB-FISH-220510-5,c3a.1<sup>sa31241/sa31241</sup>,caudal fin,ZDB-PUB-201002-161,c3a.1,Whole organism
+ZDB-FISH-220510-8,c3a.1<sup>sa31241/sa31241</sup>; uwm7Tg/uwm7Tg,neutrophil migration,ZDB-PUB-201002-161,c3a.1,Immune
+ZDB-FISH-220329-1,AB + MO1-chl1a,pericardium,ZDB-PUB-200910-9,chl1a,Circulatory
+ZDB-FISH-220329-1,AB + MO1-chl1a,trunk,ZDB-PUB-200910-9,chl1a,Skeletal
+ZDB-FISH-220329-1,AB + MO1-chl1a,ventricular system,ZDB-PUB-200910-9,chl1a,Circulatory
+ZDB-FISH-220329-15,sqet33mi2AEt + MO1-chl1a (AB),subcommissural organ,ZDB-PUB-200910-9,chl1a,Nervous
+ZDB-FISH-220329-15,sqet33mi2AEt + MO1-chl1a (AB),Reissner's fiber,ZDB-PUB-200910-9,chl1a,Nervous
+ZDB-FISH-150901-21849,eef1a1l1<sup>hi1116bTg</sup>,eye,ZDB-PUB-060503-2,eef1a1l1,Nervous
+ZDB-FISH-150901-21849,eef1a1l1<sup>hi1116bTg</sup>,sensory system,ZDB-PUB-060503-2,eef1a1l1,Nervous
+ZDB-FISH-150901-6761,eef1a1l1<sup>hi1116bTg/hi1116bTg</sup>,whole organism,ZDB-PUB-040708-1,eef1a1l1,Whole organism
+ZDB-FISH-150901-6761,eef1a1l1<sup>hi1116bTg/hi1116bTg</sup>,yolk,ZDB-PUB-040708-1,eef1a1l1,Digestive
+ZDB-FISH-150901-6761,eef1a1l1<sup>hi1116bTg/hi1116bTg</sup>,head,ZDB-PUB-040708-1,eef1a1l1,Skeletal
+ZDB-FISH-171120-7,WT + MO2-eef1a2,heart development,ZDB-PUB-170916-10,eef1a2,Circulatory
+ZDB-FISH-171120-7,WT + MO2-eef1a2,heart contraction,ZDB-PUB-170916-10,eef1a2,Circulatory
+ZDB-FISH-171120-7,WT + MO2-eef1a2,pericardium,ZDB-PUB-170916-10,eef1a2,Nervous
+ZDB-FISH-171120-7,WT + MO2-eef1a2,atrium,ZDB-PUB-170916-10,eef1a2,Circulatory
+ZDB-FISH-171120-7,WT + MO2-eef1a2,whole organism,ZDB-PUB-170916-10,eef1a2,Whole organism
+ZDB-FISH-171120-7,WT + MO2-eef1a2,head,ZDB-PUB-170916-10,eef1a2,Circulatory
+ZDB-FISH-201027-1,eef1a2<sup>zf3070/zf3070</sup> (AB),brain,ZDB-PUB-200118-22,eef1a2,Skeletal
+ZDB-FISH-201027-2,eef1a2<sup>zf3071/zf3071</sup> (AB),muscle,ZDB-PUB-200118-22,eef1a2,Skeletal
+ZDB-FISH-151014-15,AB + MO2-ercc6,DNA damage response,ZDB-PUB-150624-6,ercc6,Cell process
+ZDB-FISH-151014-15,AB + MO2-ercc6,response to ionizing radiation,ZDB-PUB-150624-6,ercc6,Cell process
+ZDB-FISH-151014-15,AB + MO2-ercc6,head,ZDB-PUB-150624-6,ercc6,Skeletal
+ZDB-FISH-151014-15,AB + MO2-ercc6,trunk,ZDB-PUB-150624-6,ercc6,Skeletal
+ZDB-FISH-151014-15,AB + MO2-ercc6,post-vent region,ZDB-PUB-150624-6,ercc6,Skeletal
+ZDB-FISH-200825-8,WT + MO3-ercc6,whole organism,ZDB-PUB-190924-17,ercc6,Whole organism
+ZDB-FISH-200825-8,WT + MO3-ercc6,postcranial axial skeleton,ZDB-PUB-190924-17,ercc6,Skeletal
+ZDB-FISH-150901-5577,WT + MO1-fpr1,neutrophil activation involved in immune response,ZDB-PUB-120928-15,fpr1,Immune
+ZDB-FISH-150901-20976,WT + MO1-gpr142al,lipid storage,ZDB-PUB-080902-18,gpr1,Cell process
+ZDB-FISH-151007-4,sphk1<sup>ko811/ko811</sup>,heart morphogenesis,ZDB-PUB-150425-7,hk1,Circulatory
+ZDB-FISH-151007-4,sphk1<sup>ko811/ko811</sup>,heart,ZDB-PUB-150425-7,hk1,Circulatory
+ZDB-FISH-190925-3,WIK + MO1-sphk1,whole organism,ZDB-PUB-170805-4,hk1,Whole organism
+ZDB-FISH-190925-4,y1Tg + MO1-sphk1,intersegmental vessel,ZDB-PUB-170805-4,hk1,Circulatory
+ZDB-FISH-170915-1,WT + MO1-ift140,whole organism,ZDB-PUB-170721-10,ift140,Cell process
+ZDB-FISH-170915-1,WT + MO1-ift140,gastrulation,ZDB-PUB-170721-10,ift140,Nervous
+ZDB-FISH-170915-1,WT + MO1-ift140,notochord,ZDB-PUB-170721-10,ift140,Skeletal
+ZDB-FISH-170915-1,WT + MO1-ift140,somite,ZDB-PUB-170721-10,ift140,Whole organism
+ZDB-FISH-240830-1,mrc1a<sup>mu408/mu408</sup>; stab2<sup>ibl2/ibl2</sup>; nz101Tg/nz101Tg,optic tectum,ZDB-PUB-210907-11,mrc1a,Nervous
+ZDB-FISH-240830-5,mrc1a<sup>mu408/mu408</sup>; stab2<sup>ibl2/ibl2</sup>; hu7135Tg/hu7135Tg,common cardinal vein,ZDB-PUB-210907-11,mrc1a,Circulatory
+ZDB-FISH-200116-17,WT + CRISPR1-mrc1b,microglial cell,ZDB-PUB-190216-3,mrc1b,Nervous
+ZDB-FISH-160908-10,TU + MO2-mybpc2b,skeletal muscle,ZDB-PUB-160330-7,mybpc2b,Skeletal
+ZDB-FISH-160908-10,TU + MO2-mybpc2b,skeletal muscle cell,ZDB-PUB-160330-7,mybpc2b,Skeletal
+ZDB-FISH-160908-10,TU + MO2-mybpc2b,trunk,ZDB-PUB-160330-7,mybpc2b,Skeletal
+ZDB-FISH-160908-10,TU + MO2-mybpc2b,pericardium,ZDB-PUB-160330-7,mybpc2b,Circulatory
+ZDB-FISH-160908-10,TU + MO2-mybpc2b,whole organism,ZDB-PUB-160330-7,mybpc2b,Whole organism
+ZDB-FISH-160913-4,WT + MO1-nansa,embryonic skeletal system development,ZDB-PUB-160524-3,nansa,Embryo
+ZDB-FISH-160913-4,WT + MO1-nansa,pericardium,ZDB-PUB-160524-3,nansa,Circulatory
+ZDB-FISH-160913-4,WT + MO1-nansa,head,ZDB-PUB-160524-3,nansa,Skeletal
+ZDB-FISH-160913-4,WT + MO1-nansa,Meckel's cartilage,ZDB-PUB-160524-3,nansa,Skeletal
+ZDB-FISH-160913-4,WT + MO1-nansa,palatoquadrate cartilage,ZDB-PUB-160524-3,nansa,Skeletal
+ZDB-FISH-160913-4,WT + MO1-nansa,ethmoid cartilage,ZDB-PUB-160524-3,nansa,Skeletal
+ZDB-FISH-160913-4,WT + MO1-nansa,parachordal cartilage,ZDB-PUB-160524-3,nansa,Skeletal
+ZDB-FISH-160913-4,WT + MO1-nansa,trabecula cranii,ZDB-PUB-160524-3,nansa,Skeletal
+ZDB-FISH-160913-4,WT + MO1-nansa,basihyal cartilage,ZDB-PUB-160524-3,nansa,Skeletal
+ZDB-FISH-160913-4,WT + MO1-nansa,ceratobranchial cartilage,ZDB-PUB-160524-3,nansa,Skeletal
+ZDB-FISH-230824-7,nfasca<sup>tum112/tum112</sup>,neuron,ZDB-PUB-220217-6,nfasca,Nervous
+ZDB-FISH-230824-8,nfasca<sup>tum112/tum112</sup>; tum101Tg/tum101Tg,myelin accumulating cell,ZDB-PUB-220217-6,nfasca,Nervous
+ZDB-FISH-230824-8,nfasca<sup>tum112/tum112</sup>; tum101Tg/tum101Tg,myelinating Schwann cell,ZDB-PUB-220217-6,nfasca,Nervous
+ZDB-FISH-200507-56,nfkb1<sup>a305/a305</sup>,startle response,ZDB-PUB-190402-7,nfkb1,Whole organism
+ZDB-FISH-150911-33,s896Tg; zf169Tg + CRISPR1-nfkb2 + CRISPR2-nfkb2 + CRISPR3-nfkb2 + CRISPR4-nfkb2 + CRISPR5-nfkb2,ventral wall of dorsal aorta,ZDB-PUB-141230-19,nfkb2,Circulatory
+ZDB-FISH-150911-37,la2Tg + CRISPR1-nfkb2 + CRISPR2-nfkb2 + CRISPR3-nfkb2 + CRISPR4-nfkb2 + CRISPR5-nfkb2,intermediate cell mass of mesoderm,ZDB-PUB-141230-19,nfkb2,Circulatory
+ZDB-FISH-171116-13,y1Tg + MO2-nfkb2,trunk,ZDB-PUB-170809-8,nfkb2,Skeletal
+ZDB-FISH-171116-13,y1Tg + MO2-nfkb2,intersegmental vessel,ZDB-PUB-170809-8,nfkb2,Circulatory
+ZDB-FISH-191211-9,WT + MO2-nfkb2,whole organism,ZDB-PUB-180810-8,nfkb2,Whole organism
+ZDB-FISH-191211-9,WT + MO2-nfkb2,hatching,ZDB-PUB-180810-8,nfkb2,Embryo
+ZDB-FISH-150901-10589,AB + MO1-nipbla,pericardium,ZDB-PUB-111114-19,nipbla,Circulatory
+ZDB-FISH-150901-10589,AB + MO1-nipbla,post-vent region,ZDB-PUB-111114-19,nipbla,Circulatory
+ZDB-FISH-150901-10589,AB + MO1-nipbla,blood circulation,ZDB-PUB-111114-19,nipbla,Circulatory
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,left/right pattern formation,ZDB-PUB-111114-19,nipbla,Embryo
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,whole organism,ZDB-PUB-111114-19,nipbla,Whole organism
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,heart looping,ZDB-PUB-111114-19,nipbla,Circulatory
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,heart jogging,ZDB-PUB-111114-19,nipbla,Circulatory
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,cardioblast migration,ZDB-PUB-111114-19,nipbla,Circulatory
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,heart tube,ZDB-PUB-111114-19,nipbla,Circulatory
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,nucleate erythrocyte,ZDB-PUB-111114-19,nipbla,Circulatory
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,gut,ZDB-PUB-111114-19,nipbla,Digestive
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,cloacal chamber,ZDB-PUB-111114-19,nipbla,Digestive
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,hyosymplectic cartilage,ZDB-PUB-111114-19,nipbla,Skeletal
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,pectoral fin bud,ZDB-PUB-140926-2,nipbla,Skeletal
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,apical ectodermal ridge pectoral fin bud,ZDB-PUB-140926-2,nipbla,Skeletal
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,positive regulation of DNA-templated transcription,ZDB-PUB-140926-2,nipbla,Cell process
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,embryonic pectoral fin morphogenesis,ZDB-PUB-140926-2,nipbla,Embryo
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,pectoral fin endoskeletal disc,ZDB-PUB-140926-2,nipbla,Skeletal
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,pectoral fin cartilage,ZDB-PUB-140926-2,nipbla,Skeletal
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,pectoral fin,ZDB-PUB-140926-2,nipbla,Skeletal
+ZDB-FISH-150901-14272,AB + MO1-nipbla + MO1-nipblb,fin fold pectoral fin bud,ZDB-PUB-140926-2,nipbla,Skeletal
+ZDB-FISH-160217-1,WT + MO1-nipbla + MO1-nipblb,translation,ZDB-PUB-141108-5,nipbla,Cell process
+ZDB-FISH-160217-1,WT + MO1-nipbla + MO1-nipblb,cell population proliferation,ZDB-PUB-141108-5,nipbla,Cell process
+ZDB-FISH-160217-1,WT + MO1-nipbla + MO1-nipblb,rRNA transcription,ZDB-PUB-141108-5,nipbla,Cell process
+ZDB-FISH-160217-1,WT + MO1-nipbla + MO1-nipblb,eye,ZDB-PUB-141108-5,nipbla,Nervous
+ZDB-FISH-160217-1,WT + MO1-nipbla + MO1-nipblb,head,ZDB-PUB-141108-5,nipbla,Skeletal
+ZDB-FISH-160217-1,WT + MO1-nipbla + MO1-nipblb,embryo development,ZDB-PUB-141108-5,nipbla,Embryo
+ZDB-FISH-160217-1,WT + MO1-nipbla + MO1-nipblb,cranial cartilage,ZDB-PUB-141108-5,nipbla,Skeletal
+ZDB-FISH-160217-1,WT + MO1-nipbla + MO1-nipblb,heart contraction,ZDB-PUB-141108-5,nipbla,Circulatory
+ZDB-FISH-160217-1,WT + MO1-nipbla + MO1-nipblb,heart,ZDB-PUB-141108-5,nipbla,Circulatory
+ZDB-FISH-150901-4291,AB + MO3-nipblb,apoptotic process,ZDB-PUB-131119-22,nipblb,Cell process
+ZDB-FISH-150901-4291,AB + MO3-nipblb,central nervous system development,ZDB-PUB-131119-22,nipblb,Nervous
+ZDB-FISH-150901-4291,AB + MO3-nipblb,regulation of canonical Wnt signaling pathway,ZDB-PUB-131119-22,nipblb,Cell process
+ZDB-FISH-150901-4291,AB + MO3-nipblb,brain,ZDB-PUB-131119-22,nipblb,Nervous
+ZDB-FISH-150901-4291,AB + MO3-nipblb,eye,ZDB-PUB-131119-22,nipblb,Nervous
+ZDB-FISH-150901-4291,AB + MO3-nipblb,post-vent region,ZDB-PUB-131119-22,nipblb,Skeletal
+ZDB-FISH-150901-4291,AB + MO3-nipblb,neural tube,ZDB-PUB-131119-22,nipblb,Nervous
+ZDB-FISH-150901-4291,AB + MO3-nipblb,cell population proliferation,ZDB-PUB-150725-3,nipblb,Cell process
+ZDB-FISH-150901-4291,AB + MO3-nipblb,whole organism,ZDB-PUB-150725-3,nipblb,Whole organism
+ZDB-FISH-150901-4291,AB + MO3-nipblb,caudal hematopoietic tissue,ZDB-PUB-190113-12,nipblb,Circulatory
+ZDB-FISH-150901-4291,AB + MO3-nipblb,ventral wall of dorsal aorta,ZDB-PUB-200424-6,nipblb,Circulatory
+ZDB-FISH-150901-4291,AB + MO3-nipblb,nucleate erythrocyte,ZDB-PUB-200424-6,nipblb,Circulatory
+ZDB-FISH-210315-1,la2Tg + MO3-nipblb,hematopoietic stem cell,ZDB-PUB-190113-12,nipblb,Circulatory
+ZDB-FISH-150901-11087,sb3Tg + MO3-pax3a,dorsal root ganglion,ZDB-PUB-080422-3,pax3a,Nervous
+ZDB-FISH-150901-11087,sb3Tg + MO3-pax3a,trunk,ZDB-PUB-080422-3,pax3a,Skeletal
+ZDB-FISH-150901-13710,WT + MO3-pax3a,head,ZDB-PUB-080422-3,pax3a,Skeletal
+ZDB-FISH-150901-13710,WT + MO3-pax3a,neural crest cell migration,ZDB-PUB-080422-3,pax3a,Nervous
+ZDB-FISH-150901-13710,WT + MO3-pax3a,melanocyte differentiation,ZDB-PUB-080422-3,pax3a,Skin
+ZDB-FISH-150901-13710,WT + MO3-pax3a,xanthophore differentiation,ZDB-PUB-080422-3,pax3a,Skin
+ZDB-FISH-150901-13710,WT + MO3-pax3a,cranial neural crest cell,ZDB-PUB-080422-3,pax3a,Nervous
+ZDB-FISH-150901-13710,WT + MO3-pax3a,trunk neural crest cell,ZDB-PUB-080422-3,pax3a,Nervous
+ZDB-FISH-150901-13710,WT + MO3-pax3a,neural crest cell,ZDB-PUB-080422-3,pax3a,Nervous
+ZDB-FISH-150901-13710,WT + MO3-pax3a,melanoblast,ZDB-PUB-080422-3,pax3a,Skin
+ZDB-FISH-150901-13710,WT + MO3-pax3a,presumptive enteric nervous system,ZDB-PUB-080422-3,pax3a,Nervous
+ZDB-FISH-150901-13710,WT + MO3-pax3a,enteric nervous system development,ZDB-PUB-080422-3,pax3a,Nervous
+ZDB-FISH-150901-13710,WT + MO3-pax3a,neural plate,ZDB-PUB-080422-3,pax3a,Nervous
+ZDB-FISH-150901-13710,WT + MO3-pax3a,cranial neural crest,ZDB-PUB-080422-3,pax3a,Nervous
+ZDB-FISH-150901-13710,WT + MO3-pax3a,enteric nervous system,ZDB-PUB-080422-3,pax3a,Nervous
+ZDB-FISH-150901-13710,WT + MO3-pax3a,xanthophore,ZDB-PUB-080422-3,pax3a,Skin
+ZDB-FISH-150901-13710,WT + MO3-pax3a,melanophore stripe,ZDB-PUB-080422-3,pax3a,Skin
+ZDB-FISH-150901-22839,WT + MO2-pax3a,pharyngeal arch,ZDB-PUB-090505-16,pax3a,Nervous
+ZDB-FISH-150901-22839,WT + MO2-pax3a,medial rectus,ZDB-PUB-090505-16,pax3a,Nervous
+ZDB-FISH-150901-22839,WT + MO2-pax3a,ventral rectus,ZDB-PUB-090505-16,pax3a,Nervous
+ZDB-FISH-150901-22839,WT + MO2-pax3a,sternohyoid,ZDB-PUB-090505-16,pax3a,Skeletal
+ZDB-FISH-221101-11,pax3a<sup>umu5/umu5</sup>; pax7b<sup>umu4/umu4</sup>,integument,ZDB-PUB-210827-6,pax3a,Skin
+ZDB-FISH-150901-11134,zf13Tg + MO1-pax3b,branchiomeric skeletal muscle development,ZDB-PUB-130709-61,pax3b,Skeletal
+ZDB-FISH-150901-11134,zf13Tg + MO1-pax3b,pectoral fin musculature,ZDB-PUB-130709-61,pax3b,Skeletal
+ZDB-FISH-150901-11134,zf13Tg + MO1-pax3b,sternohyoid,ZDB-PUB-130709-61,pax3b,Skeletal
+ZDB-FISH-150901-14688,WT + MO1-pax3b,esophagus,ZDB-PUB-130709-61,pax3b,Digestive
+ZDB-FISH-150901-14688,WT + MO1-pax3b,mastication,ZDB-PUB-130709-61,pax3b,Digestive
+ZDB-FISH-221101-13,pax3b<sup>umu6/umu6</sup>; pax7a<sup>umu3/umu3</sup>,integument,ZDB-PUB-210827-6,pax3b,Skin
+ZDB-FISH-221101-17,pax3b<sup>umu6/umu6</sup>; pax7a<sup>umu3/umu3</sup>; pax3a<sup>umu5/umu5</sup>,primitive pectoral fin adductor,ZDB-PUB-210827-6,pax3b,Skeletal
+ZDB-FISH-221101-17,pax3b<sup>umu6/umu6</sup>; pax7a<sup>umu3/umu3</sup>; pax3a<sup>umu5/umu5</sup>,primitive pectoral fin abductor,ZDB-PUB-210827-6,pax3b,Skeletal
+ZDB-FISH-221101-17,pax3b<sup>umu6/umu6</sup>; pax7a<sup>umu3/umu3</sup>; pax3a<sup>umu5/umu5</sup>,posterior hypaxial muscle,ZDB-PUB-210827-6,pax3b,Skeletal
+ZDB-FISH-221101-20,pax3b<sup>umu6/umu6</sup>; pax3a<sup>umu5/umu5</sup>,whole organism,ZDB-PUB-210827-6,pax3b,Whole organism
+ZDB-FISH-221101-21,pax3b<sup>umu6/umu6</sup>; pax3a<sup>umu5/umu5</sup>; pax7b<sup>umu4/umu4</sup>,trunk,ZDB-PUB-210827-6,pax3b,Skeletal
+ZDB-FISH-150901-15517,WT + MO1-pax7a,xanthophore,ZDB-PUB-080422-3,pax7a,Skin
+ZDB-FISH-150901-15517,WT + MO1-pax7a,head,ZDB-PUB-080422-3,pax7a,Skeletal
+ZDB-FISH-150901-15517,WT + MO1-pax7a,trunk,ZDB-PUB-080422-3,pax7a,Skeletal
+ZDB-FISH-150901-15517,WT + MO1-pax7a,developmental pigmentation,ZDB-PUB-080422-3,pax7a,Skin
+ZDB-FISH-160816-19,pax7a<sup>umu3/umu3</sup>; pax7b<sup>umu4/umu4</sup>,xanthophore differentiation,ZDB-PUB-160408-4,pax7a,Skin
+ZDB-FISH-160816-19,pax7a<sup>umu3/umu3</sup>; pax7b<sup>umu4/umu4</sup>,whole organism,ZDB-PUB-160408-4,pax7a,Whole organism
+ZDB-FISH-160816-19,pax7a<sup>umu3/umu3</sup>; pax7b<sup>umu4/umu4</sup>,dorsal larval melanophore stripe,ZDB-PUB-160408-4,pax7a,Skin
+ZDB-FISH-221101-16,pax7a<sup>umu3/umu3</sup>,pectoral fin,ZDB-PUB-210827-6,pax7a,Skeletal
+ZDB-FISH-221101-22,pax7a<sup>umu3/umu3</sup>; pax7b<sup>umu4/umu4</sup>,integument,ZDB-PUB-210827-6,pax7a,Skeletal
+ZDB-FISH-221101-23,pax7a<sup>umu3/umu3</sup>; pax3a<sup>umu5/umu5</sup>; pax7b<sup>umu4/umu4</sup>,pectoral fin musculature,ZDB-PUB-210827-6,pax7a,Skeletal
+ZDB-FISH-221101-23,pax7a<sup>umu3/umu3</sup>; pax3a<sup>umu5/umu5</sup>; pax7b<sup>umu4/umu4</sup>,sternohyoid,ZDB-PUB-210827-6,pax7a,Skeletal
+ZDB-FISH-221101-23,pax7a<sup>umu3/umu3</sup>; pax3a<sup>umu5/umu5</sup>; pax7b<sup>umu4/umu4</sup>,primitive pectoral fin adductor,ZDB-PUB-210827-6,pax7a,Skeletal
+ZDB-FISH-221101-23,pax7a<sup>umu3/umu3</sup>; pax3a<sup>umu5/umu5</sup>; pax7b<sup>umu4/umu4</sup>,primitive pectoral fin abductor,ZDB-PUB-210827-6,pax7a,Skeletal
+ZDB-FISH-221104-5,pax7a<sup>umu3/umu3</sup>; pax7b<sup>umu4/umu4</sup>; i150Tg,myotome,ZDB-PUB-210827-6,pax7a,Skeletal
+ZDB-FISH-170628-46,pax7b<sup>oz32/oz32</sup>; pax7a<sup>oz23/oz23</sup>,skeletal muscle,ZDB-PUB-170311-9,pax7b,Skeletal
+ZDB-FISH-221101-18,pax7b<sup>umu4/umu4</sup>,pectoral fin,ZDB-PUB-210827-6,pax7b,Skeletal
+ZDB-FISH-230907-2,pax7b<sup>nkgsaizGFFD164AGt/nkgsaizGFFD164AGt</sup>; gl37Tg/gl37Tg + CRISPR1-ccr2 + CRISPR2-ccr2,somite,ZDB-PUB-210212-3,pax7b,Embryo
+ZDB-FISH-230907-2,pax7b<sup>nkgsaizGFFD164AGt/nkgsaizGFFD164AGt</sup>; gl37Tg/gl37Tg + CRISPR1-ccr2 + CRISPR2-ccr2,skeletal muscle satellite cell,ZDB-PUB-210212-3,pax7b,Skeletal
+ZDB-FISH-200211-1,y1Tg + MO1-peak1,intersegmental vessel,ZDB-PUB-180607-5,peak1,Circulatory
+ZDB-FISH-200211-1,y1Tg + MO1-peak1,angiogenic sprout,ZDB-PUB-180607-5,peak1,Circulatory
+ZDB-FISH-200211-1,y1Tg + MO1-peak1,subintestinal vein,ZDB-PUB-180607-5,peak1,Circulatory
+ZDB-FISH-200211-1,y1Tg + MO1-peak1,dorsal longitudinal anastomotic vessel,ZDB-PUB-180607-5,peak1,Circulatory
+ZDB-FISH-200211-2,AB + MO1-peak1,blood circulation,ZDB-PUB-180607-5,peak1,Circulatory
+ZDB-FISH-200211-2,AB + MO1-peak1,blood,ZDB-PUB-180607-5,peak1,Circulatory
+ZDB-FISH-200211-2,AB + MO1-peak1,pericardium,ZDB-PUB-180607-5,peak1,Circulatory
+ZDB-FISH-200211-5,peak1<sup>zf2170/zf2170</sup>,whole organism,ZDB-PUB-180607-5,peak1,Whole organism
+ZDB-FISH-200211-6,y7Tg + MO1-peak1,blood vessel endothelial cell,ZDB-PUB-180607-5,peak1,Circulatory
+ZDB-FISH-150901-9678,AB + MO2-poc5,anterior/posterior axis specification,ZDB-PUB-150203-2,poc5,Embryo
+ZDB-FISH-150901-9678,AB + MO2-poc5,whole organism,ZDB-PUB-150203-2,poc5,Whole organism
+ZDB-FISH-150901-9678,AB + MO2-poc5,post-vent region,ZDB-PUB-150203-2,poc5,Skeletal
+ZDB-FISH-180615-7,TL + MO3-poc5,eye photoreceptor cell,ZDB-PUB-171223-8,poc5,Nervous
+ZDB-FISH-180615-7,TL + MO3-poc5,eye development,ZDB-PUB-171223-8,poc5,Nervous
+ZDB-FISH-180615-7,TL + MO3-poc5,visual behavior,ZDB-PUB-171223-8,poc5,Whole organism
+ZDB-FISH-180615-7,TL + MO3-poc5,pericardium,ZDB-PUB-171223-8,poc5,Circulatory
+ZDB-FISH-150901-7187,slc22a21<sup>ipk1Tg/ipk1Tg</sup> (EKW),amino-acid betaine transport,ZDB-PUB-150311-19,slc22a2,Cell process
+ZDB-FISH-200206-3,s843Tg + MO1-slc22a2,determination of heart left/right asymmetry,ZDB-PUB-190511-6,slc22a2,Circulatory
+ZDB-FISH-200206-3,s843Tg + MO1-slc22a2,cardiac ventricle,ZDB-PUB-190511-6,slc22a2,Circulatory
+ZDB-FISH-200206-3,s843Tg + MO1-slc22a2,heart,ZDB-PUB-190511-6,slc22a2,Circulatory
+ZDB-FISH-200206-3,s843Tg + MO1-slc22a2,atrium,ZDB-PUB-190511-6,slc22a2,Circulatory
+ZDB-FISH-200206-3,s843Tg + MO1-slc22a2,trunk vasculature,ZDB-PUB-190511-6,slc22a2,Circulatory
+ZDB-FISH-150901-12883,WT + MO3-slc22a4,response to methylmercury,ZDB-PUB-130703-42,slc22a4,Cell process
+ZDB-FISH-150901-14690,WT + MO2-slc22a4,selenium compound metabolic process,ZDB-PUB-130703-42,slc22a4,Cell process
+ZDB-FISH-150901-14690,WT + MO2-slc22a4,whole organism,ZDB-PUB-130703-42,slc22a4,Whole organism
+ZDB-FISH-150901-2832,WT + MO1-slc22a5,nucleate erythrocyte,ZDB-PUB-090807-19,slc22a5,Circulatory
+ZDB-FISH-150901-2832,WT + MO1-slc22a5,heme biosynthetic process,ZDB-PUB-090807-19,slc22a5,Circulatory
+ZDB-FISH-160119-5,AB/EKW + MO1-sptlc3,motor neuron,ZDB-PUB-150811-4,sptlc3,Nervous
+ZDB-FISH-200123-14,twu34Tg + MO1-tctn2,heart looping,ZDB-PUB-180531-6,tctn2,Circulatory
+ZDB-FISH-200123-14,twu34Tg + MO1-tctn2,determination of heart left/right asymmetry,ZDB-PUB-180531-6,tctn2,Circulatory
+ZDB-FISH-200123-22,AB + MO1-tctn2,heart primordium,ZDB-PUB-180531-6,tctn2,Circulatory
+ZDB-FISH-200123-22,AB + MO1-tctn2,lateral plate mesoderm,ZDB-PUB-180531-6,tctn2,Skeletal
+ZDB-FISH-150901-9610,"ml2Tg + MO1-uba1 (EKW, TL)",motor neuron,ZDB-PUB-140513-428,uba1,Nervous
+ZDB-FISH-211130-3,uba1<sup>hg120/hg120</sup>; i114Tg,whole organism,ZDB-PUB-201028-8,uba1,Whole organism
+ZDB-FISH-211130-3,uba1<sup>hg120/hg120</sup>; i114Tg,neutrophil,ZDB-PUB-201028-8,uba1,Whole organism
+ZDB-FISH-220602-1,vtg1<sup>inr101/inr101</sup> (TU),female organism,ZDB-PUB-190807-7,vtg1,Reproductive
+ZDB-FISH-220602-2,vtg1<sup>inr101/inr101</sup> (TU),fertilized egg,ZDB-PUB-190807-7,vtg1,Reproductive
+ZDB-FISH-220602-2,vtg1<sup>inr101/inr101</sup> (TU),pericardium,ZDB-PUB-190807-7,vtg1,Circulatory
+ZDB-FISH-220602-2,vtg1<sup>inr101/inr101</sup> (TU),yolk,ZDB-PUB-190807-7,vtg1,Reproductive
+ZDB-FISH-220602-2,vtg1<sup>inr101/inr101</sup> (TU),post-vent region,ZDB-PUB-190807-7,vtg1,Reproductive
+ZDB-FISH-220602-2,vtg1<sup>inr101/inr101</sup> (TU),whole organism,ZDB-PUB-190807-7,vtg1,Whole organism
+ZDB-FISH-240912-1,vtg2<sup>inr103/inr103</sup>,whole organism,ZDB-PUB-231102-9,vtg2,Whole organism
+ZDB-FISH-240912-1,vtg2<sup>inr103/inr103</sup>,yolk,ZDB-PUB-231102-9,vtg2,Embryo
+ZDB-FISH-240912-1,vtg2<sup>inr103/inr103</sup>,early embryonic cell,ZDB-PUB-231102-9,vtg2,Embryo
+ZDB-FISH-240912-1,vtg2<sup>inr103/inr103</sup>,hatching,ZDB-PUB-231102-9,vtg2,Embryo
+ZDB-FISH-240912-1,vtg2<sup>inr103/inr103</sup>,pericardium,ZDB-PUB-231102-9,vtg2,Circulatory
+ZDB-FISH-240912-1,vtg2<sup>inr103/inr103</sup>,post-vent region,ZDB-PUB-231102-9,vtg2,Skeletal
+ZDB-FISH-240912-1,vtg2<sup>inr103/inr103</sup>,coelom,ZDB-PUB-231102-9,vtg2,Embryo
+ZDB-FISH-240912-2,vtg2<sup>inr103/+</sup>,female organism,ZDB-PUB-231102-9,vtg2,Reproductive
+ZDB-FISH-240912-2,vtg2<sup>inr103/+</sup>,fertilized egg,ZDB-PUB-231102-9,vtg2,Reproductive
