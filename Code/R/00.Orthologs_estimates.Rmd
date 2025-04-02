@@ -34,7 +34,7 @@ d %>% mutate(orths = str_remove(d$value," ")) %>%
 }
 
 make_orth_table<-function(.x){
-  orthdata<-read_tsv("Datasets/OF_out.tsv") #ouput from OrthoFinder
+  orthdata<-read_tsv(".Datasets/DatasetS0_csv_files/OF_out.tsv") #ouput from OrthoFinder
   orthdata %>% dplyr::select(c(Orthogroup,contains(.x)))->d
   ncols<-max(stringr::str_count(d[,2],",")) +1 
   colmn<-paste("col",1:ncols)

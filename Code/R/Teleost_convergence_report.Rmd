@@ -1,0 +1,34 @@
+---
+title: "Estimates of molecular convergence reveal pleiotropic genes underlying adaptive variation across teleost fish - Report"
+author: "Agneesh Barua"
+date: "17/03/2025"
+output: 
+  html_document:
+    code_folding: hide
+    theme: 'lumen'
+    df_print: 'paged'
+    toc: TRUE
+    toc_float: TRUE
+---
+
+This report comprises R code used in the current manuscript. Users can load the appropriate Rmd files found in the electronic supplementary material (DatasetS10_Scripts) and reproduce the analysis and steps showed here. 
+Electronic supplementary material containing all the data files can be found at: https://zenodo.org/records/12645625
+  
+Users are free to use any piece of code in heir own studies. If you use any of the code here please cite:  
+Estimates of molecular convergence reveal pleiotropic genes underlying adaptive variation across teleost fish. 
+doi: https://doi.org/10.1101/2024.06.24.600426
+
+```{r child = '00.Orthologs_estimates.Rmd'}
+```
+
+```{r child = '01.Getting_bgee_dat.Rmd'}
+```
+
+```{r child = '02.csubst_analysis.Rmd'}
+```
+
+```{r child = '03.Gene_expression_analysis.Rmd'}
+```
+
+```{r child = '04.Revised_analysis.Rmd'}
+```

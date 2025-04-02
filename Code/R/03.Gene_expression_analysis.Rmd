@@ -67,7 +67,9 @@ purrr::map(zlist,norm_and_umap)
 ```
 
 ### Plot the convergent genes
-From the heatmap we observe the presence of two distinct clusters. 1) Set of genes being expressed throughout embryonic development and genes 2) Genes having more stage specific expression.
+From the heatmap we observe the presence of three distinct groups. 1) Set of genes with ubiquitous expression throughout embryonic development and across multiple cell types. These included genes such as *adam17a* (ADAM metallopeptidase 17a; OG0003642), *eef2b* (eukaryotic translation elongation factor 2b; OG0001781) and *eef1a1|1* (eukaryotic translation elongation factor 1 alpha 1; OG0000135).  
+2) The second group comprised genes expressed throughout embryonic development but in specific cell types. Examples include *alcam-a* (activated leukocyte cell adhesion molecule a; OG0001823) and *pax3a* (paired box 3a; OG0000460).  
+3) The third group of genes were predominantly expressed late in embryonic development. Genes in this group, such as *slc22a21* (OG0002545) and *hbae5* (OG0000107), were predominantly expressed between 24hpf and 10dpf
 ```{r,eval=FALSE}
 library(dittoSeq)
 

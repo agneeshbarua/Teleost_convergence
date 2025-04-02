@@ -143,7 +143,8 @@ build_tau_data_frame<-function(.data, var) {
     spread(Anatomical.entity.name,counts)
 }
 
-#TMM with combat batch correction
+#TMM with combat batch correction;
+#NOT USED IN THIS VERSION
 combat<-function(.data){
   library(edgeR)
   library(DESeq2)
@@ -182,6 +183,7 @@ return(dge) #use to make data frame
 }
 
 #TMM nnormalisation plus batch correction for different experiment and visualising the pca
+#NOT USED IN THIS VERSION
 norm_pca<-function(.data){
   library(edgeR)
   library(DESeq2)
@@ -277,7 +279,7 @@ d
 
 ### Normalisation PCA
 Since the data in bgee sometimes includes tissue expression data from multiple experiments, I need to check the data to determine whether it needs any specific batch correction. 
-The effect of different experiments in only prevalent in *Lepisosteus_oculatus*. Tissues of other species cluster generally together irrespective of experiment.  
+The effect of different experiments in only prevalent in *Lepisosteus_oculatus* therefore I didn't include in out analysis. Tissues of other species cluster generally together irrespective of experiment.  
 ```{r,warning=FALSE,message=FALSE}
 purrr::map(rna.dat,norm_pca)
 ```
@@ -325,20 +327,11 @@ list(Astyanax_mexicanus_tau_input = Astyanax_mexicanus_tau_input,
 
 ```
 
-### Correcting for batch effect
-I checked for potential batch effects in tissue expression between different experiments and found evidence only in *Lepisosteus oculatus*. I then corrected this using the *ComBat_seq* function from the sva R package followed by quantile normalisation.
-(A) Original data. 
-(B) Batch corrected data
-
-```{r,out.width="70%",out.height="75%"}
-knitr::include_graphics("./Supplementary_material/FigS9_Gar_expression_correction.png")
-```
 
 ### Compute Tau
 To estimate tissue specificity I used the tissue-specificity index Tau. The code below calculates tau for each tissue in each sampled species. I classify a gene as tissue-specific if it has a tau estimate above 0.8 and its mean expression level in the target tissue is higher than the sum of its expression in all the other tissues. This ensures we keep only those genes that are tissue-specific and highly expressed in their target tissues. 
 ```{r,eval=F}
 tau_input<-readRDS("./RDS/Tau_input_dat_TMM_cpm_no_log_no_combat_all_fish.rds")
-#tau_input2<-readRDS("./RDS/Tau_input_dat_Counts_post_combat.rds")
 
 #remove unwanted and ambiguous tissues (e.g. larva, immature organism etc..)
 
@@ -356,7 +349,6 @@ tau_input$Astatotilapia_calliptera_tau_input %>% compute_tau(tissue = "zone of s
 tau_input$Astyanax_mexicanus_tau_input %>% compute_tau(tissue = "zone of skin")->Astyanax_mexicanus_tau
 tau_input$Danio_rerio_tau_input %>% compute_tau(tissue = "zone of skin")->Danio_rerio_tau
 tau_input$Gasterosteus_aculeatus_tau_input %>% compute_tau(tissue = "zone of skin")->Gasterosteus_aculeatus_tau
-tau_input$Lepisosteus_oculatus_tau_input %>% compute_tau(tissue = "zone of skin")->Lepisosteus_oculatus_tau
 tau_input$Neolamprologus_brichardi_tau_input %>% compute_tau(tissue = "zone of skin")->Neolamprologus_brichardi_tau
 tau_input$Nothobranchius_furzeri_tau_input %>% compute_tau(tissue = "zone of skin")->Nothobranchius_furzeri_tau
 tau_input$Salmo_salar_tau_input %>% compute_tau(tissue = "zone of skin")->Salmo_salar_tau
@@ -366,7 +358,6 @@ list(Astyanax_mexicanus = Astyanax_mexicanus_tau,
      Astatotilapia_calliptera = Astatotilapia_calliptera_tau,
      Danio_rerio = Danio_rerio_tau,
      Gasterosteus_aculeatus= Gasterosteus_aculeatus_tau,
-     Lepisosteus_oculatus = Lepisosteus_oculatus_tau,
      Neolamprologus_brichardi = Neolamprologus_brichardi_tau,
      Nothobranchius_furzeri= Nothobranchius_furzeri_tau,
      Salmo_salar = Salmo_salar_tau) %>% saveRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_skin.rds")
@@ -378,7 +369,6 @@ tau_input$Danio_rerio_tau_input %>% compute_tau(tissue = "brain")->Danio_rerio_t
 tau_input$Esox_lucius_tau_input %>% compute_tau(tissue = "brain")->Esox_lucius_tau
 tau_input$Gadus_morhua_tau_input %>% compute_tau(tissue = "brain")->Gadus_morhua_tau
 tau_input$Gasterosteus_aculeatus_tau_input %>% compute_tau(tissue = "brain")->Gasterosteus_aculeatus_tau
-tau_input$Lepisosteus_oculatus_tau_input %>% compute_tau(tissue = "brain")->Lepisosteus_oculatus_tau
 tau_input$Neolamprologus_brichardi_tau_input %>% compute_tau(tissue = "brain")->Neolamprologus_brichardi_tau
 tau_input$Nothobranchius_furzeri_tau_input %>% compute_tau(tissue = "brain")->Nothobranchius_furzeri_tau
 tau_input$Oryzias_latipes_tau_input %>% compute_tau(tissue = "brain")->Oryzias_latipes_tau
@@ -392,7 +382,6 @@ list(Astyanax_mexicanus = Astyanax_mexicanus_tau,
      Esox_lucius = Esox_lucius_tau,
      Gadus_morhua = Gadus_morhua_tau,
      Gasterosteus_aculeatus= Gasterosteus_aculeatus_tau,
-     Lepisosteus_oculatus = Lepisosteus_oculatus_tau,
      Neolamprologus_brichardi = Neolamprologus_brichardi_tau,
      Nothobranchius_furzeri= Nothobranchius_furzeri_tau,
      Oryzias_latipes = Oryzias_latipes_tau,
@@ -404,7 +393,6 @@ tau_input$Astatotilapia_calliptera_tau_input %>% compute_tau(tissue = "camera-ty
 tau_input$Astyanax_mexicanus_tau_input %>% compute_tau(tissue = "camera-type eye")->Astyanax_mexicanus_tau
 tau_input$Esox_lucius_tau_input %>% compute_tau(tissue = "camera-type eye")->Esox_lucius_tau
 tau_input$Gasterosteus_aculeatus_tau_input %>% compute_tau(tissue = "camera-type eye")->Gasterosteus_aculeatus_tau
-tau_input$Lepisosteus_oculatus_tau_input %>% compute_tau(tissue = "camera-type eye")->Lepisosteus_oculatus_tau
 tau_input$Neolamprologus_brichardi_tau_input %>% compute_tau(tissue = "camera-type eye")->Neolamprologus_brichardi_tau
 tau_input$Salmo_salar_tau_input %>% compute_tau(tissue = "camera-type eye")->Salmo_salar_tau
 
@@ -412,7 +400,6 @@ list(Astyanax_mexicanus = Astyanax_mexicanus_tau,
      Astatotilapia_calliptera = Astatotilapia_calliptera_tau,
      Esox_lucius = Esox_lucius_tau,
      Gasterosteus_aculeatus= Gasterosteus_aculeatus_tau,
-     Lepisosteus_oculatus = Lepisosteus_oculatus_tau,
      Neolamprologus_brichardi = Neolamprologus_brichardi_tau,
      Salmo_salar = Salmo_salar_tau) %>% 
   saveRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_eye.rds")
@@ -423,7 +410,6 @@ tau_input$Danio_rerio_tau_input %>% compute_tau(tissue = "heart")->Danio_rerio_t
 tau_input$Esox_lucius_tau_input %>% compute_tau(tissue = "heart")->Esox_lucius_tau
 tau_input$Gadus_morhua_tau_input %>% compute_tau(tissue = "heart")->Gadus_morhua_tau
 tau_input$Gasterosteus_aculeatus_tau_input %>% compute_tau(tissue = "heart")->Gasterosteus_aculeatus_tau
-tau_input$Lepisosteus_oculatus_tau_input %>% compute_tau(tissue = "heart")->Lepisosteus_oculatus_tau
 tau_input$Neolamprologus_brichardi_tau_input %>% compute_tau(tissue = "heart")->Neolamprologus_brichardi_tau
 tau_input$Oryzias_latipes_tau_input %>% compute_tau(tissue = "heart")->Oryzias_latipes_tau
 tau_input$Salmo_salar_tau_input %>% compute_tau(tissue = "heart")->Salmo_salar_tau
@@ -434,7 +420,6 @@ list(Astyanax_mexicanus = Astyanax_mexicanus_tau,
      Esox_lucius = Esox_lucius_tau,
      Gadus_morhua = Gadus_morhua_tau,
      Gasterosteus_aculeatus= Gasterosteus_aculeatus_tau,
-     Lepisosteus_oculatus = Lepisosteus_oculatus_tau,
      Neolamprologus_brichardi = Neolamprologus_brichardi_tau,
      Oryzias_latipes = Oryzias_latipes_tau,
      Salmo_salar = Salmo_salar_tau) %>% saveRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_heart.rds")
@@ -446,7 +431,6 @@ tau_input$Danio_rerio_tau_input %>% compute_tau(tissue = "liver")->Danio_rerio_t
 tau_input$Esox_lucius_tau_input %>% compute_tau(tissue = "liver")->Esox_lucius_tau
 tau_input$Gadus_morhua_tau_input %>% compute_tau(tissue = "liver")->Gadus_morhua_tau
 tau_input$Gasterosteus_aculeatus_tau_input %>% compute_tau(tissue = "liver")->Gasterosteus_aculeatus_tau
-tau_input$Lepisosteus_oculatus_tau_input %>% compute_tau(tissue = "liver")->Lepisosteus_oculatus_tau
 tau_input$Neolamprologus_brichardi_tau_input %>% compute_tau(tissue = "liver")->Neolamprologus_brichardi_tau
 tau_input$Nothobranchius_furzeri_tau_input %>% compute_tau(tissue = "liver")->Nothobranchius_furzeri_tau
 tau_input$Oryzias_latipes_tau_input %>% compute_tau(tissue = "liver")->Oryzias_latipes_tau
@@ -460,7 +444,6 @@ list(Astyanax_mexicanus = Astyanax_mexicanus_tau,
      Esox_lucius = Esox_lucius_tau,
      Gadus_morhua = Gadus_morhua_tau,
      Gasterosteus_aculeatus= Gasterosteus_aculeatus_tau,
-     Lepisosteus_oculatus = Lepisosteus_oculatus_tau,
      Neolamprologus_brichardi = Neolamprologus_brichardi_tau,
      Nothobranchius_furzeri= Nothobranchius_furzeri_tau,
      Oryzias_latipes = Oryzias_latipes_tau,
@@ -474,7 +457,6 @@ tau_input$Danio_rerio_tau_input %>% compute_tau(tissue = "muscle tissue")->Danio
 tau_input$Esox_lucius_tau_input %>% compute_tau(tissue = "muscle tissue")->Esox_lucius_tau
 tau_input$Gadus_morhua_tau_input %>% compute_tau(tissue = "muscle tissue")->Gadus_morhua_tau
 tau_input$Gasterosteus_aculeatus_tau_input %>% compute_tau(tissue = "muscle tissue")->Gasterosteus_aculeatus_tau
-tau_input$Lepisosteus_oculatus_tau_input %>% compute_tau(tissue = "muscle tissue")->Lepisosteus_oculatus_tau
 tau_input$Neolamprologus_brichardi_tau_input %>% compute_tau(tissue = "skeletal muscle tissue")->Neolamprologus_brichardi_tau
 tau_input$Oryzias_latipes_tau_input %>% compute_tau(tissue = "muscle tissue")->Oryzias_latipes_tau
 tau_input$Salmo_salar_tau_input %>% compute_tau(tissue = "muscle tissue")->Salmo_salar_tau
@@ -487,7 +469,6 @@ list(Astyanax_mexicanus = Astyanax_mexicanus_tau,
      Esox_lucius = Esox_lucius_tau,
      Gadus_morhua = Gadus_morhua_tau,
      Gasterosteus_aculeatus= Gasterosteus_aculeatus_tau,
-     Lepisosteus_oculatus = Lepisosteus_oculatus_tau,
      Neolamprologus_brichardi = Neolamprologus_brichardi_tau,
      Oryzias_latipes = Oryzias_latipes_tau,
      Salmo_salar = Salmo_salar_tau,
@@ -499,7 +480,6 @@ tau_input$Astyanax_mexicanus_tau_input %>% compute_tau(tissue = "ovary")->Astyan
 tau_input$Danio_rerio_tau_input %>% compute_tau(tissue = "ovary")->Danio_rerio_tau
 tau_input$Esox_lucius_tau_input %>% compute_tau(tissue = "ovary")->Esox_lucius_tau
 tau_input$Gadus_morhua_tau_input %>% compute_tau(tissue = "ovary")->Gadus_morhua_tau
-tau_input$Lepisosteus_oculatus_tau_input %>% compute_tau(tissue = "ovary")->Lepisosteus_oculatus_tau
 tau_input$Oryzias_latipes_tau_input %>% compute_tau(tissue = "ovary")->Oryzias_latipes_tau
 tau_input$Salmo_salar_tau_input %>% compute_tau(tissue = "ovary")->Salmo_salar_tau
 
@@ -509,7 +489,6 @@ list(Astyanax_mexicanus = Astyanax_mexicanus_tau,
      Danio_rerio = Danio_rerio_tau,
      Esox_lucius = Esox_lucius_tau,
      Gadus_morhua = Gadus_morhua_tau,
-     Lepisosteus_oculatus = Lepisosteus_oculatus_tau,
      Oryzias_latipes = Oryzias_latipes_tau,
      Salmo_salar = Salmo_salar_tau) %>% saveRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_ovary.rds")
 
@@ -520,7 +499,6 @@ tau_input$Danio_rerio_tau_input %>% compute_tau(tissue = "testis")->Danio_rerio_
 tau_input$Esox_lucius_tau_input %>% compute_tau(tissue = "testis")->Esox_lucius_tau
 tau_input$Gadus_morhua_tau_input %>% compute_tau(tissue = "testis")->Gadus_morhua_tau
 tau_input$Gasterosteus_aculeatus_tau_input %>% compute_tau(tissue = "testis")->Gasterosteus_aculeatus_tau
-tau_input$Lepisosteus_oculatus_tau_input %>% compute_tau(tissue = "testis")->Lepisosteus_oculatus_tau
 tau_input$Neolamprologus_brichardi_tau_input %>% compute_tau(tissue = "testis")->Neolamprologus_brichardi_tau
 tau_input$Oryzias_latipes_tau_input %>% compute_tau(tissue = "testis")->Oryzias_latipes_tau
 tau_input$Salmo_salar_tau_input %>% compute_tau(tissue = "testis")->Salmo_salar_tau
@@ -531,7 +509,6 @@ list(Astyanax_mexicanus = Astyanax_mexicanus_tau,
      Esox_lucius = Esox_lucius_tau,
      Gadus_morhua = Gadus_morhua_tau,
      Gasterosteus_aculeatus= Gasterosteus_aculeatus_tau,
-     Lepisosteus_oculatus = Lepisosteus_oculatus_tau,
      Neolamprologus_brichardi = Neolamprologus_brichardi_tau,
      Oryzias_latipes = Oryzias_latipes_tau,
      Salmo_salar = Salmo_salar_tau) %>% saveRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_testis.rds")

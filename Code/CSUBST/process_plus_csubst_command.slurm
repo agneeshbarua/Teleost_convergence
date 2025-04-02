@@ -23,9 +23,9 @@ rm -r ${name}
 mkdir ${name}
 
 
-#copy sequences from store folder to working folder
+#copy sequences from store folder to working folder and rename headers
 cp /work/FAC/FBM/DEE/mrobinso/default/Agneesh/Projects/Pigmentation_project/All_fish/00.Seqs/For_CSUBST/${name}"_CDS.fa" .
-python modify_fasta_header_with_key_value.py ${name}"_CDS.fa" ${name}"_modhead.fa" orth_sp_pairs.tsv
+python modify_fasta_header_with_key_value.py ${name}"_CDS.fa" ${name}"_modhead.fa" orth_sp_pairs.tsv #this part adds the species names to the sequence names
 rm ${name}"_CDS.fa"
 cat ${name}"_modhead.fa" | ./rename_duplicate_headers.sh > ${name}"_modhead2.fa"
 rm ${name}"_modhead.fa"
@@ -82,16 +82,16 @@ csubst analyze --alignment_file ../$name"_cds_hammer.fa" \
                --max_arity 10
 
 #Move the CSUBST output # I have provided all these files in the Output_csusbt folder
-#Please not that not all the following files will be produced. Only the arity values for which convergence was detected will be produced. 
-mv csubst_cb_3.tsv $outDir/${name}"_"${fg_type}"_csubst_cb_3.tsv"
-mv csubst_cb_4.tsv $outDir/${name}"_"${fg_type}"_csubst_cb_4.tsv"
-mv csubst_cb_5.tsv $outDir/${name}"_"${fg_type}"_csubst_cb_5.tsv"
-mv csubst_cb_6.tsv $outDir/${name}"_"${fg_type}"_csubst_cb_6.tsv"
-mv csubst_cb_7.tsv $outDir/${name}"_"${fg_type}"_csubst_cb_7.tsv"
-mv csubst_cb_8.tsv $outDir/${name}"_"${fg_type}"_csubst_cb_8.tsv"
-mv csubst_cb_9.tsv $outDir/${name}"_"${fg_type}"_csubst_cb_9.tsv"
-mv csubst_cb_10.tsv $outDir/${name}"_"${fg_type}"_csubst_cb_10.tsv"
-mv csubst_tree.nwk $outDir/${name}"_"${fg_type}"_csubst_tree.nwk"
+#Please note that not all the following files will be produced. Only the arity values for which convergence was detected will be produced. 
+mv csubst_cb_3.tsv $outDir/${name}"_csubst_cb_3.tsv"
+mv csubst_cb_4.tsv $outDir/${name}"_csubst_cb_4.tsv"
+mv csubst_cb_5.tsv $outDir/${name}"_csubst_cb_5.tsv"
+mv csubst_cb_6.tsv $outDir/${name}"_csubst_cb_6.tsv"
+mv csubst_cb_7.tsv $outDir/${name}"_csubst_cb_7.tsv"
+mv csubst_cb_8.tsv $outDir/${name}"_csubst_cb_8.tsv"
+mv csubst_cb_9.tsv $outDir/${name}"_csubst_cb_9.tsv"
+mv csubst_cb_10.tsv $outDir/${name}"_csubst_cb_10.tsv"
+mv csubst_tree.nwk $outDir/${name}"_csubst_tree.nwk"
 
 #Move files to reproduce analysis
 mv ../${name}"_generax2.nwk" $outDir/

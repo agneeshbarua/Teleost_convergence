@@ -1,0 +1,1425 @@
+---
+title: "Pythia_analysis"
+date: "2025-01-08"
+output: 
+  html_document:
+    code_folding: hide
+    theme: 'lumen'
+    df_print: 'paged'
+    toc: TRUE
+    toc_float: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggbeeswarm)
+library(pwalign)
+library(effsize)
+library(Peptides)
+library(kldtools)
+library(ggpubr)
+library(GOSemSim)
+library(kableExtra)
+
+## Load general-use datasets
+### tissue specific genes. (check Bgee processing rmd to know how to get these)
+orth_list<-readRDS("./RDS/large_fish_tree_all_orders.rds")
+orth_list<-orth_list %>% mutate(orths =  str_remove(orth_list$orths,"..$"))
+non_spuroius_conv<-read_csv("Datasets/DatasetS0_csv_files/Non_spurious_conv.csv")
+combined_arity <-readRDS("./RDS/combined_arity.rds")
+tau_dat_all<-readRDS("./RDS/tau_dat_all.rds")
+danio_conv<-read.csv("./Datasets/DatasetS0_csv_files/Danio_rerio_convergent_genes.csv")
+
+```
+
+## Summary of convergent amino acid substitutions {.tabset}
+In this section I functionally characterise the different convergent amino acid substitutions we observed.  
+Checking the BLOSUM62 scores between the convergent substitution and other non-convergent substitutions will provide insight into the potential functional nature of the convergent sites. If the convergent sites are associated with functioning of the protein then we would expect substitutions on these sites to have lower BLOSUM62 score as compared to the non convergent ones. On an average we do observe that convergent sites have a less score than other non-convergent substitutions occurring in the same protein. When looking at the changes in specific physiochemical properties of amino acids, we found that most of the changes in amino acid properties occur during the convergent substitutions. 
+To determine the changes in amino acid properties I compared the values for properties of the ancestral amino acid and compared it with the values of extant amino acids caused by the convergent substitutions. We compared 17 different amino acid properties and found that 95% of the convergent orthogroups (85 out of 89) had significant changes (two-sided Wilcoxon rank sum test FDR < 0.05) in at least one of the 17 physicochemical properties analysed. I took all the significant changes between ancestral and extant amino acid and looked at the number caused by convergent and non-convergent substitutions. Most of the changes resulted from convergent substitutions.  
+```{r, eval=F}
+#Get amino acid properties
+data("AAdata")
+rbind(
+AAdata$zScales$Z1 %>% as_tibble() %>% mutate(property="Lipophilicity") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V")),
+AAdata$zScales$Z2 %>% as_tibble() %>% mutate(property="Steric") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V")),
+AAdata$zScales$Z3 %>% as_tibble() %>% mutate(property="Polarity") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V")),
+AAdata$kideraFactors$KF1 %>% as_tibble() %>% mutate(property="Helix_bend_preference") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V")),
+AAdata$kideraFactors$KF2 %>% as_tibble() %>% mutate(property="Side-chain_size") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V")),
+AAdata$kideraFactors$KF3 %>% as_tibble() %>% mutate(property="Extended_structure_preference") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V")),
+AAdata$kideraFactors$KF4 %>% as_tibble() %>% mutate(property="Hydrophobicity") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V")),
+AAdata$kideraFactors$KF5 %>% as_tibble() %>% mutate(property="Double-bend_preference") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V")),
+AAdata$kideraFactors$KF6 %>% as_tibble() %>% mutate(property="Partial_specific_volume") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V")),
+AAdata$kideraFactors$KF7 %>% as_tibble() %>% mutate(property="Flat_extended_preference") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V")),
+AAdata$kideraFactors$KF8 %>% as_tibble() %>% mutate(property="Occurence_in_alpha_region") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V")),
+AAdata$kideraFactors$KF10 %>% as_tibble() %>% mutate(property="Surr_hydrophobicity") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V")),
+AAdata$FASGAI$F2 %>% as_tibble() %>% mutate(property="Alpha_turn_prop") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V")),
+AAdata$FASGAI$F3 %>% as_tibble() %>% mutate(property="Bulk_prop") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V")),
+AAdata$FASGAI$F4 %>% as_tibble() %>% mutate(property="Compositional_characters") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V")),
+AAdata$FASGAI$F5 %>% as_tibble() %>% mutate(property="Local_flex") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V")),
+AAdata$FASGAI$F6 %>% as_tibble() %>% mutate(property="Electronic_prop") %>% 
+  mutate(amino_acid= c("A","R","N","D","C","Q","E","G","H","I","L","K","M","F","P","S","T","W","Y","V"))
+)->aa_properties
+
+#Distribution of aa physiochemical properties
+aa_properties %>% ggplot(aes(x=value))+
+  facet_grid(cols=vars(property))+
+  geom_density(fill="green4",alpha=0.6)+
+  theme_bw()
+
+sub_Matix_score<-function(id){
+#Prepare csusbt site output
+files<-list.files(path = paste0("./Datasets/DatasetS6_Non_spurious_convergence"), pattern = paste0(id,".tsv"),
+                    full.names = TRUE, recursive = TRUE)
+#read in file
+dat<-read_tsv(files[1]) %>% dplyr::select(OCNany2spe, OCNany2any, contains(c("aa", "codon_site_pdb"))) %>% 
+  filter(OCNany2any >0) %>% arrange(desc(OCNany2spe))
+#get branches info
+branches<-data.frame(branches=
+                       dat %>% dplyr::select(matches("^aa(?!.*(anc|hydrophobicity)).*$", perl = T)) %>% 
+                       dplyr::select(-last_col()) %>% colnames())
+branches<-branches %>% filter(str_count(branches, "_") == 1)
+
+#Special selecting function
+select_grouped_columns <- function(data, prefix) {
+  data %>%
+    dplyr::select(OCNany2spe, OCNany2any, matches(paste0("^", prefix, "(?:_anc)?(?:_hydrophobicity)?$")))
+}
+
+make_aa_sub_dat<-function(branches){
+  select_grouped_columns(dat, branches) %>% mutate(type_of_sub=case_when(OCNany2spe >= 0.5 ~ "Convergent", .default = "Non-convergent")) %>%
+    dplyr::select(3,4,type_of_sub) %>% dplyr::rename("extant"=1, "anc"=2) %>% mutate(branch.num=branches)->aa_subs_data
+  return(aa_subs_data)
+}
+#data frame with ancestral to extant aa substitution
+purrr::map(branches$branches, make_aa_sub_dat) %>% list_rbind() %>% drop_na()->aa_subs_data
+
+#Get the Blosum matrix
+data(BLOSUM62)
+aa_subs_data %>% rowwise() %>% mutate(sub_score = BLOSUM62[anc, extant]) %>% ungroup() %>% mutate(pdb_id=id) ->score
+
+#Make data frame with BLOSUM scores and aa properties
+rbind(
+left_join(
+score, aa_properties %>% filter(property=="Lipophilicity") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Lipophilicity") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y)),
+left_join(
+  score, aa_properties %>% filter(property=="Steric") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Steric") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y)),
+left_join(
+  score, aa_properties %>% filter(property=="Polarity") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Polarity") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y)),
+left_join(
+  score, aa_properties %>% filter(property=="Helix_bend_preference") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Helix_bend_preference") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y)),
+left_join(
+  score, aa_properties %>% filter(property=="Side-chain_size") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Side-chain_size") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y)),
+left_join(
+  score, aa_properties %>% filter(property=="Extended_structure_preference") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Extended_structure_preference") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y)),
+left_join(
+  score, aa_properties %>% filter(property=="Hydrophobicity") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Hydrophobicity") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y)),
+left_join(
+score, aa_properties %>% filter(property=="Double-bend_preference") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Double-bend_preference") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y)),
+  left_join(
+score, aa_properties %>% filter(property=="Partial_specific_volume") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Partial_specific_volume") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y)),
+  left_join(
+score, aa_properties %>% filter(property=="Flat_extended_preference") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Flat_extended_preference") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y)),
+  left_join(
+score, aa_properties %>% filter(property=="Occurence_in_alpha_region") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Occurence_in_alpha_region") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y)),
+  left_join(
+score, aa_properties %>% filter(property=="Surr_hydrophobicity") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Surr_hydrophobicity") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y)),
+  left_join(
+score, aa_properties %>% filter(property=="Alpha_turn_prop") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Alpha_turn_prop") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y)),
+  left_join(
+score, aa_properties %>% filter(property=="Bulk_prop") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Bulk_prop") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y)),
+  left_join(
+score, aa_properties %>% filter(property=="Compositional_characters") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Compositional_characters") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y)),
+  left_join(
+score, aa_properties %>% filter(property=="Local_flex") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Local_flex") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y)),
+  left_join(
+score, aa_properties %>% filter(property=="Electronic_prop") %>% dplyr::rename("extant"="amino_acid"), by ="extant") %>% 
+  left_join(aa_properties %>% filter(property=="Electronic_prop") %>% dplyr::rename("anc"="amino_acid"), by ="anc") %>% 
+  dplyr::rename("extant.value"="value.x", "anc.value"="value.y", "property"="property.x") %>% dplyr::select(-c(property.y))
+)->scores_and_properties
+
+#Data frame with adjusted Wilcox test pvalues
+#Convergent
+  scores_and_properties %>% filter(type_of_sub=="Convergent") %>%
+    summarise(wil_pval=p.adjust(wilcox.test(x= extant.value,y=anc.value,exact=T)$p.value, method = "fdr"), 
+              .by = c(property)) %>% 
+    mutate(pdb_id=id)->peptides_wil_out_conv
+
+#Non-convergent
+  scores_and_properties %>% filter(type_of_sub=="Non-convergent") %>%
+    summarise(wil_pval=p.adjust(wilcox.test(x= extant.value,y=anc.value,exact=T)$p.value, method = "fdr"), 
+              .by = c(property)) %>% 
+    mutate(pdb_id=id)->peptides_wil_out_nc
+  
+  #Plot section
+  make_boxplot_list<-function(property_type){
+    scores_and_properties  %>% filter(type_of_sub=="Convergent", property==property_type) %>%
+      dplyr::select(type_of_sub,branch.num, extant.value,anc.value,property) %>% 
+      pivot_longer(cols = c(extant.value,anc.value)) %>% 
+      ggplot(aes(y=value, x=name, fill=name))+
+      facet_grid(rows=vars(branch.num))+
+      geom_boxplot(outliers = F)+
+      geom_quasirandom(shape=21, size=2.5,color="black", alpha=0.7)+
+      scale_fill_manual(values = c("#1AAEC0","#EA5B15"))+
+      xlab("Sequence type")+
+      labs(subtitle = paste0(property_type,"\nWilcoxon p-value: ",
+                             peptides_wil_out_conv %>% filter(property==property_type) %>% 
+                               pull(wil_pval) %>% signif(digits = 4)))+
+      theme_bw()+theme(axis.text.x = element_blank(),
+                       axis.ticks.x = element_blank())->p
+    return(p)
+    }
+
+map(as.list(peptides_wil_out_conv %>% distinct(property) %>% pull()), 
+    make_boxplot_list)->bp_list
+
+library(patchwork)
+wrap_plots(bp_list,guides = "collect",widths = 2) %>% ggsave(filename = paste0(id,".pdf"), 
+                                                             path = "./Figures/Properties_will_test/",
+                                                             device = "pdf",
+                                                            width = 10, height = 15, units = "in", scale = 1.5)
+
+
+#return(score)
+#return(combined_plots)
+#return(scores_and_properties)
+
+return(rbind(peptides_wil_out_conv %>% mutate(state="Convergent"),
+             peptides_wil_out_nc %>% mutate(state="Non-convergent")))
+}
+#Use this to skip any error
+poss_sub_Matix_score = possibly(.f = sub_Matix_score)
+
+#For the BLOSUM matrix use return(score)
+purrr::map(pdb_ids, poss_sub_Matix_score) %>% list_rbind()->score_table
+#score_table %>% saveRDS("./RDS/sub_Matix_score_output_for_blosum.rds")
+
+#Make the table
+purrr::map(pdb_ids, poss_sub_Matix_score) %>% list_rbind() ->Properties_pval_output_table
+#Properties_pval_output_table %>% saveRDS("./RDS/Properties_pval_output_will_test.rds")
+#For direction change use return(scores_and_properties)
+purrr::map(pdb_ids, poss_sub_Matix_score) %>% list_rbind()->scores_and_properties
+```
+
+### BLOSUM62 score
+```{r,fig.dim=c(3,4)}
+#Load table
+score_table<-readRDS("./RDS/sub_Matix_score_output.rds")
+#Get p-values
+signif((wilcox.test(x=score_table %>% group_by(pdb_id,type_of_sub) %>% summarise(mean_score=mean(sub_score,na.rm =T), .groups = "drop") %>%
+                      filter(type_of_sub=="Convergent") %>% pull(mean_score),
+                    y=score_table %>% group_by(pdb_id,type_of_sub) %>% summarise(mean_score=mean(sub_score,na.rm =T), .groups = "drop") %>%
+                      filter(type_of_sub=="Non-convergent") %>% pull(mean_score)))$p.value, digits = 1)->p
+#Make plot
+score_table %>% group_by(pdb_id,type_of_sub) %>% summarise(mean_score=mean(sub_score,na.rm =T), .groups = "drop") %>% 
+  ggplot(aes(x=type_of_sub, y=mean_score, colour = type_of_sub))+
+  geom_boxplot()+
+  geom_quasirandom()+
+  xlab("Type of substitution")+
+  ylab("Mean BLOSUM62 score")+
+  theme_bw()+
+  theme(legend.position = "none")+
+  scale_color_manual(values = c("#EA5B15","#1AAEC0"))+
+  labs(subtitle = paste0("Two-sided Wilcoxon p-value: ",p))
+  
+```
+
+
+### Distribution of convergent substitutions on protein structure
+Here I check whether there is any relationship between the occurrence of convergence and site features on the protein. Using a chi-sq test of independence I found that in our data, there is no relationship between protein site feature and convergence. This tells me that there isn't a general trend for convergence to be enriched on surface residues, rather it seems specific to each protein.
+```{r}
+prot<-read_csv("./Datasets/DatasetS0_csv_files/protein_sites/Session_pymol/combined_prots.csv") %>% filter(Localisation != "Localisation") %>% filter(Number_aa != "Number_aa") %>% filter(Name_aa != "Name_aa") %>% filter(near_lig != "near_lig") %>% filter(Secondary_Structure != "Secondary_Structure") %>% filter(convergence != "convergence") %>% filter(Localisation != "no_build") %>% filter(Secondary_Structure != "no_build")
+
+chisq.test(table(prot$Localisation,prot$convergence),correct = F)
+chisq.test(table(prot$Secondary_Structure,prot$convergence),correct = F)
+
+```
+
+### Structural properties
+Here I visualise the structural characteristics of the convergent substitutions to get an sense of where on the protein structure most sites are located.  
+Original data found in Datasets/DatasetS0_csv_files/protein_sites/Session_pymol
+```{r,fig.dim=c(4,8)}
+str_dat<-tibble(surface = c("Surface","Burried"),
+                no = c(159,22),
+                n.per = round((no/sum(no))*100,digits = 1))
+conf_dat<-tibble(conf = c("Helix","Sheet","Loop"),
+                 no = c(83,33,65),
+                 n.per = round((no/sum(no))*100,digits = 1))
+
+
+labs1<-paste0(str_dat[[1]], " (", str_dat$n.per, "%)")
+labs2<-paste0(conf_dat[[1]], " (", conf_dat$n.per, "%)")
+  
+
+g1<-ggpubr::ggbarplot(str_dat,x = "surface",y = "n.per",palette = "npg",color = "black",fill = "surface",label = labs1,xlab = "Localisation of convergnt residues on protein",ylab = "Percentage of convergent sites")
+g2<-ggpubr::ggbarplot(conf_dat,x = "conf",y = "n.per",palette = "npg",color = "black",fill = "conf",label = labs2,xlab = "Localisation of convergent residues on secondary structure",ylab = "Percentage of convergent sites")
+
+ggpubr::ggarrange(g1,g2,nrow = 2,legend = "none")
+
+```
+
+### Amino acid property changes
+```{r, fig.dim=c(6,5)}
+#Load data
+Properties_pval_output_table<-readRDS("./RDS/Properties_pval_output_will_test.rds")
+
+#Make plots
+Properties_pval_output_table %>% 
+  mutate(is_sig=case_when(wil_pval < 0.05 ~ "yes", .default = "no")) %>% 
+  filter(is_sig == "yes") %>% group_by(property, state) %>% dplyr::count(is_sig) %>% ungroup() %>% 
+  mutate(property=reorder(property,-n)) %>% dplyr::rename("Type of substitution"="state") %>% 
+  ggplot(aes(y=property, x=n))+
+  geom_col(aes(fill=`Type of substitution`), alpha=0.7, color="black",position = "dodge")+
+  scale_fill_manual(values = c("#EA5B15","#1AAEC0"))+
+  xlab("Number of significant changes\nto amino acid property")+
+  ylab("Physiochemical properties of amino acids")+
+  theme_bw()
+
+Properties_pval_output_table %>% 
+  mutate(is_sig=case_when(wil_pval < 0.05 ~ "yes", .default = "no")) %>% 
+  filter(is_sig == "yes") %>% group_by(property, state) %>% dplyr::count(is_sig) %>% ungroup() %>% 
+  mutate(property=reorder(property,-n)) %>% dplyr::rename("Type of substitution"="state") %>% 
+  ggplot(aes(y=property, x=n))+
+  geom_col(aes(fill=`Type of substitution`), alpha=0.7, color="black",position = "fill")+
+  scale_fill_manual(values = c("#EA5B15","#1AAEC0"))+
+  xlab("Proportion of significant changes\nto amino acid property")+
+  ylab("Physiochemical properties of amino acids")+
+  theme_bw()
+```
+
+## Analysing distribution of tissue specificity {.tabset}
+In contrast to the previous analysis where we checked whether convergent genes were more tissue specific than other genes in the genome, this analysis compares the distributions of the values of the tissues-specificity index between convergent genes and all other genes. The distribution of tissue specificity of the convergent genes was significantly different compared to the background (two-sided Kolmogorov-Smirnov test P < 0.05), with the convergent genes having higher distribution at intermediate values of tissue specificity.
+
+### Setting up analysis
+```{r, warning=F}
+#Load data
+skin<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_with_log_no_combat_skin.rds") 
+                           %>% purrr::list_rbind() %>% dplyr::select(Gene.ID))$Gene.ID)
+brain<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_with_log_no_combat_brain.rds") 
+                           %>% purrr::list_rbind() %>% dplyr::select(Gene.ID))$Gene.ID)
+eye<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_with_log_no_combat_eye.rds") 
+                           %>% purrr::list_rbind() %>% dplyr::select(Gene.ID))$Gene.ID)
+heart<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_with_log_no_combat_heart.rds") 
+                           %>% purrr::list_rbind() %>% dplyr::select(Gene.ID))$Gene.ID)
+liver<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_with_log_no_combat_liver.rds") 
+                           %>% purrr::list_rbind() %>% dplyr::select(Gene.ID))$Gene.ID)
+muscle<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_with_log_no_combat_muscle.rds") 
+                           %>% purrr::list_rbind() %>% dplyr::select(Gene.ID))$Gene.ID)
+ovary<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_with_log_no_combat_ovary.rds") 
+                           %>% purrr::list_rbind() %>% dplyr::select(Gene.ID))$Gene.ID)
+testis<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_with_log_no_combat_testis.rds") 
+                           %>% purrr::list_rbind() %>% dplyr::select(Gene.ID))$Gene.ID)
+
+#Get the orthologs that are exclusively tissue specific for each tissue
+#brain
+ts_list<-list(brain,eye,heart,liver,muscle,skin,ovary,testis) #change the first entry in the list when computing exclusive orthologs
+brain_excl<-purrr::reduce(ts_list,anti_join, by = "Orthogroup")# %>% write_csv("./Datasets/DatasetS0_csv_files/Brain_exclusive_orths.csv")
+#eye
+ts_list<-list(eye,brain,heart,liver,muscle,skin,ovary,testis) #change the first entry in the list when computing exclusive orthologs
+eye_excl<-purrr::reduce(ts_list,anti_join, by = "Orthogroup")# %>% write_csv("./Datasets/DatasetS0_csv_files/Eye_exclusive_orths.csv")
+#heart
+ts_list<-list(heart,brain,eye,liver,muscle,skin,ovary,testis) #change the first entry in the list when computing exclusive orthologs
+heart_excl<-purrr::reduce(ts_list,anti_join, by = "Orthogroup")# %>% write_csv("./Datasets/DatasetS0_csv_files/Heart_exclusive_orths.csv")
+#liver
+ts_list<-list(liver,eye,brain,heart,muscle,skin,ovary,testis) #change the first entry in the list when computing exclusive orthologs
+liver_excl<-purrr::reduce(ts_list,anti_join, by = "Orthogroup")# %>% write_csv("./Datasets/DatasetS0_csv_files/Liver_exclusive_orths.csv")
+#muscle
+ts_list<-list(muscle,eye,brain,heart,liver,skin,ovary,testis) #change the first entry in the list when computing exclusive orthologs
+muscle_excl<-purrr::reduce(ts_list,anti_join, by = "Orthogroup")# %>% write_csv("./Datasets/DatasetS0_csv_files/Muscle_exclusive_orths.csv")
+#skin
+ts_list<-list(skin,eye,brain,heart,liver,muscle,ovary,testis) #change the first entry in the list when computing exclusive orthologs
+skin_excl<-purrr::reduce(ts_list,anti_join, by = "Orthogroup")# %>% write_csv("./Datasets/DatasetS0_csv_files/Skin_exclusive_orths.csv")
+#ovary
+ts_list<-list(ovary,eye,brain,heart,liver,muscle,skin,testis) #change the first entry in the list when computing exclusive orthologs
+ovary_excl<-purrr::reduce(ts_list,anti_join, by = "Orthogroup")# %>% write_csv("./Datasets/DatasetS0_csv_files/Overy_exclusive_orths.csv")
+#testis
+ts_list<-list(testis,eye,brain,heart,liver,muscle,skin,ovary) #change the first entry in the list when computing exclusive orthologs
+testis_excl<-purrr::reduce(ts_list,anti_join, by = "Orthogroup")# %>% write_csv("./Datasets/DatasetS0_csv_files/Testis_exclusive_orths.csv")
+
+rbind(brain_excl,eye_excl,heart_excl,liver_excl,muscle_excl,skin_excl,ovary_excl,testis_excl)->excl_tissue_spec
+
+#convergent genes that are also tissue specific
+d<-combined_arity %>% filter(Orthogroup %in% non_spuroius_conv$Orthogroup) %>% distinct(Orthogroup)
+
+d<-d %>% mutate(c = "TRUE") %>% 
+  mutate(brain_c = if_else(d$Orthogroup %in% brain_excl$Orthogroup, TRUE, FALSE)) %>% 
+  mutate(eye_c = if_else(d$Orthogroup %in% eye_excl$Orthogroup, TRUE, FALSE)) %>% 
+  mutate(heart_c = if_else(d$Orthogroup %in% heart_excl$Orthogroup, TRUE, FALSE)) %>% 
+  mutate(liver_c = if_else(d$Orthogroup %in% liver_excl$Orthogroup, TRUE, FALSE)) %>% 
+  mutate(muscle_c = if_else(d$Orthogroup %in% muscle_excl$Orthogroup, TRUE, FALSE)) %>% 
+  mutate(skin_c = if_else(d$Orthogroup %in% skin_excl$Orthogroup, TRUE, FALSE)) %>% 
+  mutate(ovary_c = if_else(d$Orthogroup %in% ovary_excl$Orthogroup, TRUE, FALSE)) %>% 
+  mutate(testis_c = if_else(d$Orthogroup %in% testis_excl$Orthogroup, TRUE, FALSE))
+
+
+d %>% mutate(spec_in_tissue=
+               case_when(brain_c==TRUE ~ "brain",
+                         eye_c==TRUE ~ "eye",
+                         heart_c==TRUE ~ "heart",
+                         liver_c==TRUE ~ "liver",
+                         muscle_c==TRUE ~ "muscle",
+                         skin_c==TRUE ~ "skin",
+                         ovary_c==TRUE ~ "ovary",
+                         testis_c==TRUE ~ "testis")) %>% dplyr::select(Orthogroup,spec_in_tissue) %>% drop_na()->excl_conv_tissue
+
+left_join(tau_dat_all$Danio_rerio,
+          danio_conv %>% dplyr::select(Orthogroup,orths) %>% dplyr::rename("Gene.ID"="orths") %>% mutate(conv="yes"),
+          by = "Gene.ID") %>% distinct(Gene.ID,.keep_all = T) %>% replace_na(list(conv="no")) %>% rowwise() %>%
+  mutate(num_tissues = sum(c_across(-c(Gene.ID,tau,conv,,Orthogroup)) > 0.1)) %>%
+  ungroup()->Danio_tau_conv_all
+
+left_join(Danio_tau_conv_all, excl_conv_tissue, by = "Orthogroup") %>% mutate(spec_in_tissue=replace_na(spec_in_tissue,"no_tsp")) %>% 
+  mutate(is_tsp=case_when(spec_in_tissue=="no_tsp" ~ "no", .default = "yes"))->estimated_ts_conv_Danio_tau_conv_all
+```
+
+### Distribution of tissue-specificity
+```{r,warning=F,eval=F}
+#load all tissue-specificity data
+tau_dat_all<-readRDS("./RDS/tau_dat_all.rds")
+#Function to plot tissue specificity and compare distributions. 
+ts_dis_plots<-function(dat,sp_name){
+  inner_join(
+    dat,
+    orth_list %>% filter(sp==sp_name) %>% dplyr::rename("Gene.ID"=orths) %>% 
+      dplyr::select(Gene.ID,Orthogroup), by = "Gene.ID") %>%
+    mutate(state=case_when(Orthogroup %in% non_spuroius_conv$Orthogroup ~ "Convergent", .default = "Non-convergent")) %>% mutate(is_tsp=case_when(tau >= 0.8~"yes",.default = "no"))->tau_dist_dat
+
+  #gets p-val for the ks test
+  ks_test_pval<-(ks.test(x=tau_dist_dat %>% filter(state=="Convergent") %>% pull(tau),
+                         y=tau_dist_dat %>% filter(state=="Non-convergent") %>% pull(tau)))$p.value %>% round(4)
+#Plot  
+  tau_dist_dat %>% 
+    ggplot(aes(x=tau, fill = state, y=..density..))+
+    geom_density(alpha=0.6)+
+    facet_grid(rows=vars(state))+
+    scale_fill_manual(values = c("#EA5B15","#1AAEC0"))+
+    geom_vline(xintercept = 0.3, linetype="dashed")+#low tissue-specificity
+    geom_vline(xintercept = 0.8, linetype="dashed")+#high tissue-specificity
+    theme_bw()+
+    labs(title=paste0(str_replace(pattern = "_", string = sp_name, replacement = " ")),
+         subtitle = paste0("Two-sided KS test p-value: ",ks_test_pval))+
+    theme(plot.title = element_text(face = "italic"))->dist_ts
+  
+  ggpubr::ggarrange(dist_ts,legend = "none") %>% return()
+  #tau_dist_dat %>% return() #for dist tests
+}
+
+ggpubr::ggarrange(
+  ts_dis_plots(tau_dat_all$Astyanax_mexicanus, sp_name = "Astyanax_mexicanus"),
+  ts_dis_plots(tau_dat_all$Astatotilapia_calliptera, sp_name = "Astatotilapia_calliptera"),
+  ts_dis_plots(tau_dat_all$Danio_rerio, sp_name = "Danio_rerio"),
+  ts_dis_plots(tau_dat_all$Esox_lucius, sp_name = "Esox_lucius"),
+  ts_dis_plots(tau_dat_all$Gasterosteus_aculeatus, sp_name = "Gasterosteus_aculeatus"),
+  ts_dis_plots(tau_dat_all$Gadus_morhua, sp_name = "Gadus_morhua"),
+  ts_dis_plots(tau_dat_all$Neolamprologus_brichardi, sp_name = "Neolamprologus_brichardi"),
+  ts_dis_plots(tau_dat_all$Nothobranchius_furzeri, sp_name = "Nothobranchius_furzeri"),
+  ts_dis_plots(tau_dat_all$Oryzias_latipes, sp_name = "Oryzias_latipes"),
+  ts_dis_plots(tau_dat_all$Salmo_salar, sp_name = "Salmo_salar"),
+  ts_dis_plots(tau_dat_all$Scophthalmus_maximus, sp_name = "Scophthalmus_maximus"))->ts_dis_dat
+#ts_dis_dat %>% saveRDS("./RDS/ts_dis_dat.rds")
+```
+
+```{r,fig.dim=c(12,10)}
+readRDS("./RDS/ts_dis_dat.rds")
+```
+
+### Test of unimodality
+Using the Sileverman (Silverman 1981) and Hartigan (Hartigan and Hartigan 1985) tests of unimodality we observed that the tissue-specificity index (tau) of the convergent gene sets resembled a more unimodal distribution as compared to the bimodal distribution of the background set. In this test we set the null hypothesis as the modality we want to test, and check whether the test distribution deviates from it.  For example, we set the null hypothesis as a unimodal distribution, and we check whether the distribution of tau of convergent gene deviates from it. A non-significant p-value indicates we cannot reject the null hypothesis, i.e. our distribution is unimodal. We also compared the distribution of tau for all the other genes and found that they always deviate the null distribution i.e. p-values < 0.05. 
+
+```{r,eval=FALSE}
+#function to carry out modality analysis
+mode_test<-function(dat,sp){
+  library(multimode)
+  set.seed(0000) #set seed for the boot strapping
+  #Hardigan's dip test
+  tibble(sp=sp,
+         #this is for the convergent gene sets
+         test_sil_pval=(modetest(ts_dis_plots(dat, sp_name = sp) %>% 
+                                   filter(Orthogroup %in% non_spuroius_conv$Orthogroup) %>% 
+                                   pull(tau), mod0 = 1, method = "HH",B=1000, submethod=NULL))$p.value,
+         #this is for the background genes
+         bg_sil_pval=(modetest(ts_dis_plots(tau_dat_all$Danio_rerio, sp_name = "Danio_rerio") %>% 
+                                 filter(!Orthogroup %in% non_spuroius_conv$Orthogroup) %>% 
+                                 pull(tau), mod0 = 1, method = "HH",B=1000, submethod=NULL))$p.value) %>% 
+    mutate(is_unimodal=case_when(test_sil_pval > 0.05  & bg_sil_pval < 0.05 ~ "yes", .default = "no"),
+           test="Hardigan")->HH
+  #Silverman's mode estimator
+  tibble(sp=sp,
+         test_sil_pval=(modetest(ts_dis_plots(dat, sp_name = sp) %>% 
+                                   filter(Orthogroup %in% non_spuroius_conv$Orthogroup) %>% 
+                                   pull(tau), mod0 = 1, method = "SI",B=1000, submethod=1))$p.value,
+         bg_sil_pval=(modetest(ts_dis_plots(tau_dat_all$Danio_rerio, sp_name = "Danio_rerio") %>% 
+                                 filter(!Orthogroup %in% non_spuroius_conv$Orthogroup) %>% 
+                                 pull(tau), mod0 = 1, method = "SI",B=1000, submethod=1))$p.value) %>% 
+    mutate(is_unimodal=case_when(test_sil_pval > 0.05  & bg_sil_pval < 0.05 ~ "yes", .default = "no"),
+           test="Silverman")->SI
+  
+  rbind(HH,SI) %>% return()
+}
+
+rbind(
+  mode_test(dat=tau_dat_all$Astatotilapia_calliptera, sp="Astatotilapia_calliptera"),
+  mode_test(dat=tau_dat_all$Astyanax_mexicanus, sp="Astyanax_mexicanus"),
+  mode_test(dat=tau_dat_all$Danio_rerio, sp="Danio_rerio"),
+  mode_test(dat=tau_dat_all$Esox_lucius, sp="Esox_lucius"),
+  mode_test(dat=tau_dat_all$Gasterosteus_aculeatus, sp="Gasterosteus_aculeatus"),
+  mode_test(dat=tau_dat_all$Gadus_morhua, sp="Gadus_morhua"),
+  mode_test(dat=tau_dat_all$Neolamprologus_brichardi, sp="Neolamprologus_brichardi"),
+  mode_test(dat=tau_dat_all$Nothobranchius_furzeri, sp="Nothobranchius_furzeri"),
+  mode_test(dat=tau_dat_all$Oryzias_latipes, sp="Oryzias_latipes"),
+  mode_test(dat=tau_dat_all$Salmo_salar, sp="Salmo_salar"),
+  mode_test(dat=tau_dat_all$Scophthalmus_maximus, sp="Scophthalmus_maximus")
+)->dist_test_out
+
+```
+### Plot the modality test results
+```{r,fig.dim=c(3,10)}
+dist_test_out<-readRDS("./RDS/dist_test_out.rds")
+
+dist_test_out
+
+dist_test_out %>% 
+  ggplot(aes(x=1,y=1, fill=is_unimodal))+
+  facet_grid(rows=vars(sp),cols=vars(test))+
+  geom_tile(alpha=0.85)+
+  scale_fill_manual(values = c("#C78BDD","#47932C"))+
+  theme_bw()+
+  ylab(NULL)+
+  xlab(NULL)+
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x  = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
+```
+
+### Get single cell distribution
+In this analysis I look at the distribution of convergent genes and the different cells types they are expressed in. The rationale is to check whether on an average, the convergent genes are expressed in different number of cell types as compared to a background set of genes. Here, the background is all other genes, resulting in a null distribution. Using the Kolmogorov-Smirnov test, I test for divergence between the two distributions. Using the two-sided test I see that the distributions differ from one another, and using the one-sided test I check whether the values in the convergent group and higher than the test group at corresponding positions along the distributions where they diverge. The KS test shows that the values are greater at the divergent points, suggesting that convergent group of genes on an average are expressed in more cell types.
+```{r,eval=F}
+library(SingleCellExperiment)
+library(scater)
+library(scuttle)
+
+danio_conv<-read_csv("./Datasets/DatasetS0_csv_files/Danio_rerio_convergent_genes.csv")
+Danio_biomart<-read_csv("./Datasets/DatasetS0_csv_files/Danio_biomart.csv")
+zhub_dat<-readRDS("./RDS/zhub_full_log.rds")
+
+left_join(estimated_ts_conv_Danio_tau_conv_all,
+          Danio_biomart %>% dplyr::select(`Gene stable ID`, `Gene name`) %>% 
+            dplyr::rename("Gene.ID"=`Gene stable ID`),
+          by = "Gene.ID") %>% distinct(Gene.ID, .keep_all = T)->estimated_ts_conv_Danio_tau_conv_all
+
+#Function to load single cell data and process it
+single_cell_df<-function(stage,gene_in){
+  
+  zhub_dat<-readRDS(paste0("./RDS/zhub_",stage,"_log.rds"))
+  scuttle::makePerCellDF(zhub_dat, features = gene_in, assay.type = "logcounts", swap.rownames="gene_ids")  %>% 
+  dplyr::rename("logCounts"=gene_in) %>% filter(logCounts >= 0.5) %>% mutate(gene=gene_in)->cell_df
+  
+  num_of_samples<-(length(cell_df %>% distinct(fish) %>% pull(fish))-1)
+  
+  #Keep the cells with expression in at least max-1 samples
+    cell_df %>% group_by(zebrafish_anatomy_ontology_class) %>% summarise(count_fish=n_distinct(fish), .groups = "keep") %>% 
+      ungroup() %>% filter(count_fish >= num_of_samples)->filter_in_cell_type
+  
+  cell_df %>% filter(zebrafish_anatomy_ontology_class %in% filter_in_cell_type$zebrafish_anatomy_ontology_class) %>% 
+    dplyr::select(gene,logCounts,timepoint,zebrafish_anatomy_ontology_class,
+                  zebrafish_anatomy_ontology_id,fish,
+                  X_umap.1,X_umap.2)->cell_df
+  
+    return(cell_df)
+}
+
+
+single_cell_df<-possibly(.f = single_cell_df, otherwise = NULL)
+
+
+purrr::map(.x=as.list(head(estimated_ts_conv_Danio_tau_conv_all %>% 
+    filter(conv=="yes") %>% pull(Gene.ID))),
+           ~single_cell_df(stage = "10hpf",gene_in = .x)) %>% list_rbind()->conv_cells_10hpf
+
+purrr::map(.x=as.list(estimated_ts_conv_Danio_tau_conv_all %>% 
+                        filter(conv=="yes") %>% pull(Gene.ID)),
+           ~single_cell_df(stage = "12hpf",gene_in = .x)) %>% list_rbind()->conv_cells_12hpf
+
+purrr::map(.x=as.list(estimated_ts_conv_Danio_tau_conv_all %>% 
+                        filter(conv=="yes") %>% pull(Gene.ID)),
+           ~single_cell_df(stage = "14hpf",gene_in = .x)) %>% list_rbind()->conv_cells_14hpf
+
+purrr::map(.x=as.list(estimated_ts_conv_Danio_tau_conv_all %>% 
+                        filter(conv=="yes") %>% pull(Gene.ID)),
+           ~single_cell_df(stage = "16hpf",gene_in = .x)) %>% list_rbind()->conv_cells_16hpf
+
+purrr::map(.x=as.list(estimated_ts_conv_Danio_tau_conv_all %>% 
+                        filter(conv=="yes") %>% pull(Gene.ID)),
+           ~single_cell_df(stage = "19hpf",gene_in = .x)) %>% list_rbind()->conv_cells_19hpf
+
+purrr::map(.x=as.list(estimated_ts_conv_Danio_tau_conv_all %>% 
+                        filter(conv=="yes") %>% pull(Gene.ID)),
+           ~single_cell_df(stage = "24hpf",gene_in = .x)) %>% list_rbind()->conv_cells_24hpf
+
+purrr::map(.x=as.list(estimated_ts_conv_Danio_tau_conv_all %>% 
+                        filter(conv=="yes") %>% pull(Gene.ID)),
+           ~single_cell_df(stage = "3dpf",gene_in = .x)) %>% list_rbind()->conv_cells_3dpf
+
+purrr::map(.x=as.list(estimated_ts_conv_Danio_tau_conv_all %>% 
+                        filter(conv=="yes") %>% pull(Gene.ID)),
+           ~single_cell_df(stage = "5dpf",gene_in = .x)) %>% list_rbind()->conv_cells_5dpf
+
+purrr::map(.x=as.list(estimated_ts_conv_Danio_tau_conv_all %>% 
+                        filter(conv=="yes") %>% pull(Gene.ID)),
+           ~single_cell_df(stage = "10dpf",gene_in = .x)) %>% list_rbind()->conv_cells_10dpf
+
+
+#All cells
+system.time(
+purrr::map(.x=as.list(rowData(zhub_dat)$gene_ids[1:20]),
+           ~single_cell_df(stage = "10hpf",gene_in = .x)) %>% list_rbind()->all_gene_10hpf
+)
+
+
+purrr::map(.x=as.list(rowData(zhub_dat)$gene_ids),
+           ~single_cell_df(stage = "12hpf",gene_in = .x)) %>% list_rbind()->all_gene_12hpf
+all_gene_12hpf %>% saveRDS("./RDS/all_gene_12hpf.rds")
+
+purrr::map(.x=as.list(rowData(zhub_dat)$gene_ids),
+           ~single_cell_df(stage = "14hpf",gene_in = .x)) %>% list_rbind()->all_gene_14hpf
+all_gene_14hpf %>% saveRDS("./RDS/all_gene_14hpf.rds")
+
+purrr::map(.x=as.list(rowData(zhub_dat)$gene_ids),
+           ~single_cell_df(stage = "16hpf",gene_in = .x)) %>% list_rbind()->all_gene_16hpf
+
+purrr::map(.x=as.list(rowData(zhub_dat)$gene_ids),
+           ~single_cell_df(stage = "19hpf",gene_in = .x)) %>% list_rbind()->all_gene_19hpf
+
+purrr::map(.x=as.list(rowData(zhub_dat)$gene_ids),
+           ~single_cell_df(stage = "24hpf",gene_in = .x)) %>% list_rbind()->all_gene_24hpf
+
+purrr::map(.x=as.list(rowData(zhub_dat)$gene_ids),
+           ~single_cell_df(stage = "3dpf",gene_in = .x)) %>% list_rbind()->conv_cells_3dpf
+
+purrr::map(.x=as.list(rowData(zhub_dat)$gene_ids),
+           ~single_cell_df(stage = "5dpf",gene_in = .x)) %>% list_rbind()->all_gene_5dpf
+
+purrr::map(.x=as.list(rowData(zhub_dat)$gene_ids),
+           ~single_cell_df(stage = "10dpf",gene_in = .x)) %>% list_rbind()->all_gene_10dpf
+
+sc_dist_analysis<-function(sc_dat, plot_title){
+
+#count the number of unique cell types per gene and get their ortholog annotations
+inner_join(
+  sc_dat %>% summarise(no_uniq_cells_types=n_distinct(zebrafish_anatomy_ontology_class), .by = "gene"),
+  orth_list %>% dplyr::select(Orthogroup,orths,sp) %>% filter(sp=="Danio_rerio") %>% dplyr::rename("gene"=orths),by = "gene") %>% dplyr::rename("Gene.ID"=gene)->cell_types_orth
+  
+#Get information on convergence
+rbind(
+cell_types_orth %>% filter(Orthogroup %in% non_spuroius_conv$Orthogroup) %>% mutate(state="conv"),
+cell_types_orth %>% filter(!Orthogroup %in% non_spuroius_conv$Orthogroup) %>% mutate(state="non_conv"))->test_dat
+#Get information of tissue specificity
+test_dat %>% mutate(is_tsp=case_when(Orthogroup %in% (estimated_ts_conv_Danio_tau_conv_all %>% filter(is_tsp=="yes"))$Orthogroup ~ "yes",.default = "no"))->test_dat
+
+(ks.test(x=test_dat  %>% filter(state=="conv") %>% pull(no_uniq_cells_types),
+        y=test_dat  %>% filter(state=="non_conv") %>% pull(no_uniq_cells_types),
+            alternative = "two.sided"))$p.value->ks_pval_two_sided
+(ks.test(x=test_dat  %>% filter(state=="conv") %>% pull(no_uniq_cells_types),
+        y=test_dat  %>% filter(state=="non_conv") %>% pull(no_uniq_cells_types),
+            alternative = "greater"))$p.value->ks_pval_greater
+(ks.test(x=test_dat  %>% filter(state=="conv") %>% pull(no_uniq_cells_types),
+        y=test_dat  %>% filter(state=="non_conv") %>% pull(no_uniq_cells_types),
+            alternative = "less"))$p.value->ks_pval_less
+
+test_dat %>% 
+  ggplot(aes(x=no_uniq_cells_types, fill = state))+
+  geom_density(alpha=0.6)+
+  scale_fill_manual(values = c("#EA5B15","#1AAEC0"))+
+  xlab("Number of unique cell types")+
+  labs(title = str_remove(string = paste0(plot_title), 
+                          pattern ="all_gene_"),
+       subtitle = paste0("One-sided KS-test p-value: ", signif(ks_pval_greater, digits = 3)))+
+  theme_bw()+
+  theme(text = element_text(size=8))->dist_plot
+
+test_dat  %>%
+  ggplot(aes(x=no_uniq_cells_types, color= state))+
+  stat_ecdf()+
+  xlab("Number of unique cell types")+
+  scale_color_manual(values = c("#EA5B15","#1AAEC0"))+
+  theme_bw()+
+  labs(title = "Cumulative probability distrubutions")+
+  theme(text = element_text(size=8))->ecdf_plot
+
+ggarrange(dist_plot, ecdf_plot, ncol = 1, common.legend = T)->c_plot
+
+
+return(list(dist_plot_dat=dist_plot$data,c_plot=c_plot, ks_pval_two_sided=ks_pval_two_sided, ks_pval_greater=ks_pval_greater, ks_pval_less=ks_pval_less))
+}
+
+#Load processed sc data frame and run above function
+all_gene_10hpf<-readRDS("./RDS/all_gene_10hpf.rds")
+sc_dist_analysis(sc_dat = all_gene_10hpf, plot_title= "Distribution of gene expression\nin unique cell types at 10hpf")->dist_res_10hpf
+dist_res_10hpf %>% saveRDS("./RDS/dist_res_10hpf.rds")
+rm(all_gene_10hpf)
+
+all_gene_12hpf<-readRDS("./RDS/all_gene_12hpf.rds")
+sc_dist_analysis(sc_dat = all_gene_12hpf, plot_title= "Distribution of gene expression\nin unique cell types at 12hpf")->dist_res_12hpf
+dist_res_12hpf %>% saveRDS("./RDS/dist_res_12hpf.rds")
+rm(all_gene_12hpf)
+
+all_gene_14hpf<-readRDS("./RDS/all_gene_14hpf.rds")
+sc_dist_analysis(sc_dat = all_gene_14hpf, plot_title= "Distribution of gene expression\nin unique cell types at 14hpf")->dist_res_14hpf
+dist_res_14hpf %>% saveRDS("./RDS/dist_res_14hpf.rds")
+rm(all_gene_14hpf)
+
+all_gene_16hpf<-readRDS("./RDS/all_gene_16hpf.rds")
+sc_dist_analysis(sc_dat = all_gene_16hpf, plot_title= "Distribution of gene expression\nin unique cell types at 16hpf")->dist_res_16hpf
+dist_res_16hpf %>% saveRDS("./RDS/dist_res_16hpf.rds")
+rm(all_gene_16hpf)
+
+all_gene_19hpf<-readRDS("./RDS/all_gene_19hpf.rds")
+sc_dist_analysis(sc_dat = all_gene_19hpf, plot_title= "Distribution of gene expression\nin unique cell types at 19hpf")->dist_res_19hpf
+dist_res_19hpf %>% saveRDS("./RDS/dist_res_19hpf.rds")
+rm(all_gene_19hpf)
+
+all_gene_24hpf<-readRDS("./RDS/all_gene_24hpf.rds")
+sc_dist_analysis(sc_dat = all_gene_24hpf, plot_title= "Distribution of gene expression\nin unique cell types at 24hpf")->dist_res_24hpf
+dist_res_24hpf %>% saveRDS("./RDS/dist_res_24hpf.rds")
+rm(all_gene_24hpf)
+
+all_gene_3dpf<-readRDS("./RDS/all_gene_3dpf.rds")
+sc_dist_analysis(sc_dat = all_gene_3dpf, plot_title= "Distribution of gene expression\nin unique cell types at 3dpf")->dist_res_3dpf
+dist_res_3dpf %>% saveRDS("./RDS/dist_res_3dpf.rds")
+rm(all_gene_3dpf)
+
+all_gene_5dpf<-readRDS("./RDS/all_gene_5dpf.rds")
+sc_dist_analysis(sc_dat = all_gene_5dpf, plot_title= "Distribution of gene expression\nin unique cell types at 5dpf")->dist_res_5dpf
+dist_res_5dpf %>% saveRDS("./RDS/dist_res_5dpf.rds")
+rm(all_gene_5dpf)
+
+all_gene_10dpf<-readRDS("./RDS/all_gene_10dpf.rds")
+sc_dist_analysis(sc_dat = all_gene_10dpf, plot_title= "Distribution of gene expression\nin unique cell types at 10dpf")->dist_res_10dpf
+dist_res_10dpf %>% saveRDS("./RDS/dist_res_10dpf.rds")#This takes very long; couple of hours and is a very large rds (~1.5GB). Therefore, have not included
+rm(all_gene_10dpf)
+
+dist_res_10hpf<-readRDS("./RDS/dist_res_10hpf.rds")
+dist_res_12hpf<-readRDS("./RDS/dist_res_12hpf.rds")
+dist_res_14hpf<-readRDS("./RDS/dist_res_14hpf.rds")
+dist_res_16hpf<-readRDS("./RDS/dist_res_16hpf.rds")
+dist_res_19hpf<-readRDS("./RDS/dist_res_19hpf.rds")
+dist_res_24hpf<-readRDS("./RDS/dist_res_24hpf.rds")
+dist_res_3dpf<-readRDS("./RDS/dist_res_3dpf.rds")
+dist_res_5dpf<-readRDS("./RDS/dist_res_5dpf.rds")
+dist_res_10dpf<-readRDS("./RDS/dist_res_10dpf.rds")#This takes very long; couple of hours and is a very large rds (~1.5GB). Therefore, have not included
+```
+
+
+```{r,eval=FALSE}
+dist_res_10hpf
+```
+
+### Running cell distribution analysis for random set of genes
+Here I run the analysis using a random set of genes. While visually the distributions may look similar at times, the KS test shows that their distributions are not different from the background. This suggests that the convergent genes have a unique distribution of gene expression in different cell types as opposed to any random set of genes. 
+I am showing the results here for 10hpf and 10dps, Users can run the code for any other time point. 
+```{r,eval=FALSE}
+sc_dist_random<-function(sc_dat, plot_title){
+
+#count the number of unique cell types per gene and get their ortholog annotations
+inner_join(
+  sc_dat %>% summarise(no_uniq_cells_types=n_distinct(zebrafish_anatomy_ontology_class), .by = "gene"),
+  orth_list %>% dplyr::select(Orthogroup,orths,sp) %>% filter(sp=="Danio_rerio") %>% dplyr::rename("gene"=orths),by = "gene") %>% dplyr::rename("Gene.ID"=gene)->cell_types_orth
+  
+#Takes a random set of 89 orthogroups 
+rbind(
+  cell_types_orth %>% filter(Orthogroup %in% (orth_list %>% distinct(Orthogroup) %>% pull(Orthogroup))[runif(89, min = 1, max = 8308)]) %>% 
+    mutate(state="conv"), cell_types_orth %>% filter(!Orthogroup %in% non_spuroius_conv$Orthogroup) %>% mutate(state="non_conv"))->test_dat
+
+#Get information of tissue specificity
+test_dat %>% mutate(is_tsp=case_when(Orthogroup %in% (estimated_ts_conv_Danio_tau_conv_all %>% filter(is_tsp=="yes"))$Orthogroup ~ "yes",.default = "no"))->test_dat
+
+
+(ks.test(x=test_dat  %>% filter(state=="conv") %>% pull(no_uniq_cells_types),
+        y=test_dat  %>% filter(state=="non_conv") %>% pull(no_uniq_cells_types),
+            alternative = "two.sided"))$p.value->ks_pval_two_sided
+(ks.test(x=test_dat  %>% filter(state=="conv") %>% pull(no_uniq_cells_types),
+        y=test_dat  %>% filter(state=="non_conv") %>% pull(no_uniq_cells_types),
+            alternative = "greater"))$p.value->ks_pval_greater
+(ks.test(x=test_dat  %>% filter(state=="conv") %>% pull(no_uniq_cells_types),
+        y=test_dat  %>% filter(state=="non_conv") %>% pull(no_uniq_cells_types),
+            alternative = "less"))$p.value->ks_pval_less
+
+test_dat %>% 
+  ggplot(aes(x=no_uniq_cells_types, fill = state))+
+  geom_density(alpha=0.6)+
+  scale_fill_manual(values = c("#EA5B15","#1AAEC0"))+
+  xlab("Number of unique cell types")+
+  labs(title = str_remove(string = paste0(plot_title), 
+                          pattern ="all_gene_"),
+       subtitle = paste0("One-sided KS-test p-value: ", signif(ks_pval_greater, digits = 3)))+
+  theme_bw()+
+  theme(text = element_text(size=8))->dist_plot
+
+test_dat  %>%
+  ggplot(aes(x=no_uniq_cells_types, color= state))+
+  stat_ecdf()+
+  xlab("Number of unique cell types")+
+  scale_color_manual(values = c("#EA5B15","#1AAEC0"))+
+  theme_bw()+
+  labs(title = "Cumulative probability distrubutions")+
+  theme(text = element_text(size=8))->ecdf_plot
+
+
+ggarrange(dist_plot, ecdf_plot, ncol = 1, common.legend = T)->c_plot
+
+return(list(c_plot=c_plot, ks_pval_two_sided=ks_pval_two_sided, ks_pval_greater=ks_pval_greater, ks_pval_less=ks_pval_less))
+}
+
+sc_dist_random(sc_dat = all_gene_10hpf, plot_title= "Random genes at 10hpf")->dist_random_10hpf
+
+sc_dist_random(sc_dat = all_gene_10dpf, plot_title= "Random genes at 10dpf")->dist_random_10dpf
+
+```
+
+## Sementic Similaritry of gene sets {.tabset}
+In this section I check whether the convergent genes and sets of non-convergent (background) genes differ in terms of the diversity of biological features they are associated with. To do this I estimate Sementic Similaritry (SS) of the GO terms. SS uses the information content of GO terms as well as their ontology structure to allow comparison of genes annotated with GO terms. Higher the SS the more closely related two gene products (or gene sets are). I estimate the pairwise SS of two gene sets, the convergent genes and a background gene set. I found that the convergent genes on an average, have lower SS for Biological Process terms and Cellular Component terms than a background set (one-sided KS-test). This implies that the convergent gene sets are likely associate with more diverse set of processes and are expressed in a more diverse cellular structures than the background. 
+
+### Loading the GO annotations
+```{r, eval=F}
+library(GOSemSim)
+library(org.Dr.eg.db)
+library(AnnotationDbi)
+
+#Load Danio data
+read_csv("./Datasets/DatasetS0_csv_files/Danio_biomart.csv")->Danio_biomart
+danio_conv<-read_csv("./Datasets/DatasetS0_csv_files/Danio_rerio_convergent_genes.csv")
+#Get GO data
+go_annotations <- select(org.Dr.eg.db,
+                         keys = keys(org.Dr.eg.db, keytype = "ENSEMBL"), 
+                         columns = c("GO", "ONTOLOGY"), 
+                         keytype = "ENSEMBL")
+
+#Prepare the semantic data
+drGO_BP<-godata('org.Dr.eg.db', keytype="ENSEMBL", ont="BP")
+drGO_MF<-godata('org.Dr.eg.db', keytype="ENSEMBL", ont="MF")
+drGO_CC<-godata('org.Dr.eg.db', keytype="ENSEMBL", ont="CC")
+
+#Specify gene sets
+geneset_conv<-orth_list %>% filter(sp=="Danio_rerio") %>% filter(Orthogroup %in% non_spuroius_conv$Orthogroup)
+geneset_nc<-orth_list %>% filter(sp=="Danio_rerio") %>% filter(!Orthogroup %in% non_spuroius_conv$Orthogroup) 
+
+#Retrieve annotations
+go_annotations_BP <- go_annotations %>% filter(ONTOLOGY=="BP")
+go_annotations_MF <- go_annotations %>% filter(ONTOLOGY=="MF")
+go_annotations_CC <- go_annotations %>% filter(ONTOLOGY=="CC")
+```
+
+### Calculating SS
+```{r,eval=FALSE}
+#Select a random geneset a background
+#I've repeated the analysis using multiple random gene sets are the result is always the same. Try!
+#Selecting 120 Orthogroups gives around the same number of genes
+#We also ran this with 2000 random orthogroups as the background, and we sill get the same results. Note, this analysis can take some time.  
+#set.seed(1234)
+random_set<-(geneset_nc %>% distinct(Orthogroup))$Orthogroup[runif(120,min = 1,9061) %>% round()] 
+
+#Compute SS between gene sets for each GO term category
+mgeneSim(genes=geneset_conv$orths,
+         semData=drGO_BP, measure="Wang",verbose=FALSE, combine = "BMA")->gene_sem_conv_BP
+mgeneSim(genes=geneset_nc %>% 
+           filter(Orthogroup %in% random_set) %>% pull(orths),
+         semData=drGO_BP, measure="Wang",verbose=FALSE, combine = "BMA")->gene_sem_nc_BP
+mgeneSim(genes=geneset_conv$orths,
+         semData=drGO_MF, measure="Wang",verbose=FALSE, combine = "BMA")->gene_sem_conv_MF
+mgeneSim(genes=geneset_nc %>% 
+           filter(Orthogroup %in% random_set) %>% pull(orths),
+         semData=drGO_MF, measure="Wang",verbose=FALSE, combine = "BMA")->gene_sem_nc_MF
+mgeneSim(genes=geneset_conv$orths,
+         semData=drGO_CC, measure="Wang",verbose=FALSE, combine = "BMA")->gene_sem_conv_CC
+mgeneSim(genes=geneset_nc %>% 
+           filter(Orthogroup %in% random_set) %>% pull(orths),
+         semData=drGO_CC, measure="Wang",verbose=FALSE, combine = "BMA")->gene_sem_nc_CC
+
+#remove self comparisons and symetric comparisons and combine into one df
+rbind(
+  reshape2::melt(gene_sem_nc_BP) %>% filter(Var1!=Var2) %>%
+    distinct(Var1, Var2, .keep_all = TRUE)%>% mutate(type="Non-convergent",GO_group="BP"),
+  reshape2::melt(gene_sem_nc_MF) %>% filter(Var1!=Var2) %>%
+    distinct(Var1, Var2, .keep_all = TRUE)%>% mutate(type="Non-convergent",GO_group="MF"),
+  reshape2::melt(gene_sem_nc_CC) %>% filter(Var1!=Var2) %>%
+    distinct(Var1, Var2, .keep_all = TRUE)%>% mutate(type="Non-convergent",GO_group="CC"),
+  reshape2::melt(gene_sem_conv_BP) %>% filter(Var1!=Var2) %>%
+    distinct(Var1, Var2, .keep_all = TRUE)%>% mutate(type="Convergent",GO_group="BP"),
+  reshape2::melt(gene_sem_conv_MF) %>% filter(Var1!=Var2) %>%
+    distinct(Var1, Var2, .keep_all = TRUE)%>% mutate(type="Convergent",GO_group="MF"),
+  reshape2::melt(gene_sem_conv_CC) %>% filter(Var1!=Var2) %>%
+    distinct(Var1, Var2, .keep_all = TRUE)%>% mutate(type="Convergent",GO_group="CC"))->ss_test
+
+
+ss_test %>% saveRDS("./RDS/ss_test_Wang.rds")
+#ss_test %>% saveRDS("./RDS/ss_test_Wang_2k.rds") #Another data set with 2 orths. Gives same result. 
+```
+
+```{r, fig.dim=c(3,8)}
+ss_test<-readRDS("./RDS/ss_test_Wang.rds")
+#Plot the difference in SS between groups with the test p-value; 
+#the one-sided test checks whether the divergence of the convergent distribution is significantly higher at the corresponding values. 
+ss_test %>% filter(GO_group=="BP") %>% 
+  ggplot(aes(x=log2(value), fill = type))+
+  geom_density(color="black", alpha=0.6)+
+  theme_bw()+  
+  scale_fill_manual(values = c("#EA5B15","#1AAEC0"))+
+  xlab("log2(Wang's sementic similarity)")+
+  labs(title = "Biological Process Terms",
+       subtitle = paste0("One-sided KS p-value = ",
+                         signif(ks.test(ss_test %>% filter(GO_group=="BP") %>% filter(type=="Convergent") %>% pull(value),
+                                            ss_test %>% filter(GO_group=="BP") %>% filter(type=="Non-convergent") %>% pull(value),
+                                            alternative = "greater", exact = T)$p.value,digits = 3)))->g_bp_ks
+
+ss_test %>% filter(GO_group=="MF") %>% 
+  ggplot(aes(x=log2(value), fill = type))+
+  geom_density(color="black", alpha=0.6)+
+  scale_fill_manual(values = c("#EA5B15","#1AAEC0"))+
+  theme_bw()+  
+  xlab("log2(Wang's sementic similarity)")+
+  labs(title = "Molecular Function Terms",
+       subtitle = paste0("One-sided KS p-value = ",
+                         signif(ks.test(ss_test %>% filter(GO_group=="MF") %>% filter(type=="Convergent") %>% pull(value),
+                                            ss_test %>% filter(GO_group=="MF") %>% filter(type=="Non-convergent") %>% pull(value),
+                                            alternative = "greater",exact = T)$p.value, digits = 3)))->g_mf_ks
+
+
+ss_test %>% filter(GO_group=="CC") %>% 
+  ggplot(aes(x=log2(value), fill = type))+
+  geom_density(color="black", alpha=0.6)+
+  scale_fill_manual(values = c("#EA5B15","#1AAEC0"))+
+  theme_bw()+  
+  xlab("log2(Wang's sementic similarity)")+
+  labs(title = "Cellular Component Terms",
+       subtitle = paste0("One-sided KS test p-value = ",
+                         signif(ks.test(ss_test %>% filter(GO_group=="CC") %>% filter(type=="Convergent") %>% pull(value),
+                                            ss_test %>% filter(GO_group=="CC") %>% filter(type=="Non-convergent") %>% pull(value),
+                                            alternative = "greater",exact = T)$p.value, digits = 3)))->g_cc_ks
+
+ggpubr::ggarrange(g_bp_ks,g_mf_ks,g_cc_ks,ncol = 1, common.legend = T,legend = "none")
+```
+
+### SS Dendrogram
+In this section I do a semantic similarity analysis between GO terms and then make a dendrogram to visualise their diversity and similarity. 
+```{r,eval=F}
+##Compute SS between terms
+SemSim_compute<-function(ensembl,annot,measure, semData){
+expand_grid(c1=annot %>% filter(ENSEMBL==paste0(ensembl)) %>% pull(GO),
+            c2=annot %>% filter(ENSEMBL==paste0(ensembl)) %>% pull(GO)) %>% 
+    filter(c1 != c2) %>% 
+  # Ensure symmetric rows are removed
+  rowwise() %>%
+  mutate(pair = list(sort(c(c1, c2)))) %>%
+  ungroup() %>%
+  distinct(pair, .keep_all = TRUE) %>%
+  dplyr::select(-pair)->dat
+
+#Make the function to calculate semantic similarity
+avg_semsim<-function(go1,go2,measure,combine,ensembl){
+  goSim(go1, go2, semData=semData, measure=measure)->res
+  
+  data.frame(GO1=go1,
+             GO2=go2,
+             ss=res,
+             ensembl_id=ensembl)->res_dat
+  
+  return(res_dat)
+}
+
+purrr::pmap(list(.x = as.list(dat$c1),
+                 .y = as.list(dat$c2)), 
+            ~avg_semsim(go1=.x, go2=.y, 
+                        ensembl=ensembl, 
+                        measure = measure)) %>% list_rbind()->ss_res
+return(ss_res)
+
+}
+#To get the graphs for the other categories, replace go_annotations_BP, and drGO_BP
+purrr::map(.x=as.list(geneset_conv$orths),
+           ~SemSim_compute(ensembl = .x, 
+                           annot=go_annotations_BP, 
+                           semData=drGO_BP, measure="Wang")) %>% list_rbind()->ss_out_conv
+
+# Function to get GO term descriptions
+get_go_description <- function(go_terms) {
+  library(GO.db)
+  map_chr(go_terms, ~ AnnotationDbi::select(GO.db, keys = .x, columns = "TERM", keytype = "GOID")$TERM[1] %||% NA)
+}
+# Add descriptions to dataframe
+df <- ss_out_conv %>% na.omit() %>% 
+  mutate(
+    GO1_Description = get_go_description(GO1),
+    GO2_Description = get_go_description(GO2)
+  )
+#df %>% write_csv("./Datasets/DatasetS0_csv_files/SS_graph_data_CC.csv")
+
+```
+
+These plots can be found in Datasets S12 in the online repository.
+```{r,eval=F}
+library(enrichplot)
+library(clusterProfiler)
+df<-read_csv("./Datasets/DatasetS0_csv_files/SS_graph_data_BP.csv")
+#df <- df %>% na.omit() %>% filter(ss <= 0.5) #for the figure in the main text I use this filter to make visualisation clearer. 
+
+# Make custom enrichResult object
+data.frame(ID=c(df$GO1,df$GO2)) %>% mutate(Description=get_go_description(c(df$GO1,df$GO2)))->t
+inner_join(t,df %>% dplyr::select(GO1,ensembl_id) %>% 
+             dplyr::rename("ID"="GO1"), by = "ID",relationship = "many-to-many") %>% 
+  distinct(ID,ensembl_id, .keep_all = T)->t
+t %>% group_by(ID, Description) %>% mutate(Count=n_distinct(ensembl_id)) %>% ungroup()->t
+t %>% mutate(pvalue=0.05, p.adjust = 0.05) %>% dplyr::rename("geneID"="ensembl_id")->t2
+t2 %>% distinct(ID, .keep_all = T) %>% column_to_rownames("ID") %>% 
+  mutate(ID=t2 %>% distinct(ID) %>% pull(ID)) %>% 
+  dplyr::select(ID, Description, pvalue,p.adjust,geneID,Count)->t2
+
+custom_enrich <- new(
+  "enrichResult",
+  result = t2 %>% distinct(ID, .keep_all = T),
+  organism = "custom",
+  keytype = "ENSEMBL",
+  ontology = "BP",#Can be kept the same
+  gene = unlist(strsplit(t2$geneID, "/")),
+  geneSets = list(),
+  pvalueCutoff = 0.05,
+  pAdjustMethod = "BH"
+)
+
+go_db <- godata('org.Dr.eg.db', ont="BP", computeIC=FALSE)#Change ont for other categories
+sim_matrix <- setReadable(custom_enrich, 'org.Dr.eg.db', 'ENSEMBL')
+sim_matrix <- enrichplot::pairwise_termsim(custom_enrich, semData=go_db, method = "Wang")
+p_sim_matrix<- enrichplot::treeplot(sim_matrix)
+
+
+dist_matrix <- as.dist(1 - sim_matrix@termsim) 
+hc <- hclust(dist_matrix, method = "ward.D2")
+
+hc_dendro<-as.dendrogram(hc)
+hc_dendro_data <- ggdendro::dendro_data(hc_dendro,type="rectangle")
+
+labels_df <- hc_dendro_data$labels
+left_join(
+  left_join(labels_df,t2 %>% dplyr::select(Description,geneID),by=c("label"="Description")),
+  danio_conv %>% dplyr::select(orths,`Gene name`), by=c("geneID"="orths")) %>% ungroup() %>% distinct(label,`Gene name`) %>% mutate(label=paste0(`Gene name`))->labels_gene_name
+gene_colors <- colorspace::qualitative_hcl(n = 68, palette = "set3")
+tibble(labels_gene_name %>% distinct(`Gene name`),
+       gene_colors=gene_colors)
+left_join(labels_gene_name,
+          tibble(labels_gene_name %>% distinct(`Gene name`),
+       gene_colors=gene_colors),
+       by=c("Gene name"="Gene name"))->colors_gene
+
+labels_df2<-tibble(x=labels_df$x, y=labels_df$y, label=labels_df$label, label2=labels_gene_name$label, col=colors_gene$gene_colors)
+
+#These labels are for BP; users have to annotate the other categories themselves. 
+#labels_df$type<-c(rep("Development",36),
+#                  rep("Translation and protein processing",32),
+#                  rep("Metabolic process",11),
+#                  rep("Transport",20),
+#                  rep("Immune response",21),
+#                  rep("Pigmentation and behaviour",4),
+#                  rep("Mitotic process",15),
+#                  rep("Signalling pathways",17),
+#                  rep("Reproduction related",3),
+#                  rep("Cell cycle and homeostasis",12))
+
+
+library(ggdendro)
+ggplot(segment(hc_dendro_data)) +
+  geom_segment(aes(x = x, y = y, xend = xend, yend = yend))+
+  geom_text(data = labels_df2, 
+            aes(x=x, y=y-0.05, label=label2, colour = col),
+            hjust = 0,vjust = 0.4, size=3,fontface="italic")+
+  geom_text(data = labels_df2, 
+            aes(x=x, y=y-0.5, label=label),
+            hjust = 0,vjust = 0.4, size=3)+
+  coord_flip()+
+  scale_y_reverse(expand = c(0.9, 0))+
+  scale_color_identity()+
+  theme_void()
+
+```
+
+
+## Phenotypic effect distribution {.tabset}
+We collected data from the Zebrafish International Network (ZFIN) database to examine the distribution of unique phenotypic terms associated with genetic perturbation (knockdowns, mutation screens, and morpholino experiments) in Danio rerio. The ZFIN database provides a wide array of expertly curated cross referenced genetic and genomics data that is routinely used to study gene functions.  For the convergent genes with data in ZFIN, we observed that genetic perturbation can affect several structures across multiple tissue systems. Compared to the background of all genes with available phenotypic data, the convergent genes had a higher distribution at intermediate levels of affected phenotypic terms, significantly different from the background (one-sided Kolmogorov-Smirnov test P < 0.05)
+
+### Load the data
+```{r,eval=FALSE}
+read_csv("./Datasets/DatasetS0_csv_files/Danio_biomart.csv")->Danio_biomart #Obtained from bioMart package
+read_tsv("./Datasets/DatasetS0_csv_files/phenoGeneCleanData_fish_2023.05.07.tsv")->pheno #Download from ZFIN
+
+
+
+get_danio<-function(data,name){
+orth_list %>% filter(Species=="Danio_rerio") %>% filter(Orthogroup %in% data)->d
+
+Danio_biomart %>% filter(`Gene stable ID` %in% d$orths) %>% distinct(`Gene name`) %>%  write_csv(paste0("./Datasets/DatasetS0_csv_files/",name,"_convergent_Danio_genes.csv"))
+}
+
+get_danio(non_spuroius_conv$Orthogroup,"Non_spurious_conv")
+
+orth_list %>% filter(Orthogroup %in% non_spuroius_conv$Orthogroup) %>% filter(sp == "Danio_rerio") %>% dplyr::select(Orthogroup,orths)->dan
+
+
+left_join(dan,pheno %>% filter(`Gene Symbol` %in% dan$`Gene name`) %>% dplyr::rename(`Gene name`=`Gene Symbol`), by = "Gene name") %>% write_csv("./Datasets/DatasetS0_csv_files/Danio_rerio_convergent_genes_pheno.csv")
+```
+
+### ZFIN table
+```{r,echo=FALSE,include=TRUE,message=FALSE}
+pheno_conv<-read_csv("./Datasets/DatasetS0_csv_files/Danio_rerio_convergent_genes_pheno.csv")
+
+kbl(head(pheno_conv,1000)) %>% kable_styling() %>%
+  scroll_box(width = "1000px", height = "400px")
+```
+
+### Phenotype plots
+The plot shows the distribution of phenotype keyword terms and the frequency of affected phenotype terms from ZFIN. Panel on the left shows the effect of genetic perturbation on the convergent genes. Panel on the right shows the number of unique affected structures that show a phenotype after genetic perturbation. The data shows that mutations in the convergent genes can affect several phenotypes and structures, with a majority of the effects showing a decrease or reduction in affected structures or processes, while a few shows an increase.
+```{r,fig.dim=c(16,12)}
+ph_dat<-pheno_conv %>% summarise(n = n(),.by = c(`Phenotype Keyword Name`)) %>% mutate(`Phenotype Keyword Name`=reorder(`Phenotype Keyword Name`,n))
+g1<-ggpubr::ggbarplot(ph_dat, y = "Phenotype Keyword Name", x = "n", 
+                  x.text.angle = 90,
+                  fill = "#708090",
+                  color = "white",
+                  xlab = "Frequency of keyword")+
+    geom_text(aes(label = n), hjust = -0.2)
+
+
+read_tsv("./Datasets/DatasetS0_csv_files/phenoGeneCleanData_fish_2023.05.07.tsv")->pheno #Download from ZFIN
+#ph_c<-pheno %>% filter(`Gene Symbol` %in% pheno_conv$`Gene name`)
+ph_c<-pheno %>% filter(`Gene Symbol` %in% pheno_conv$`Gene name`) %>% dplyr::select(`Gene Symbol`,`Affected Structure or Process 1 superterm ID`) %>% 
+  na.omit() %>% distinct(`Affected Structure or Process 1 superterm ID`,.keep_all = T) %>% 
+  summarise(n = n(),.by = c(`Gene Symbol`)) %>% 
+  mutate(type = "convergent") %>% arrange(desc(n))
+
+
+make_pheno_terms_dist<-function(d){
+  pheno %>% filter(`Gene Symbol` == d) %>% distinct(`Affected Structure or Process 1 superterm ID`,.keep_all = T) %>% 
+  summarise(n = n(),.by = c(`Affected Structure or Process 1 superterm Name`,`Publication ID`)) %>% mutate(Gene_symbol = d)
+}
+
+purrr::map(ph_c$`Gene Symbol`,make_pheno_terms_dist) %>% bind_rows() %>% 
+  dplyr::select(Gene_symbol,`Affected Structure or Process 1 superterm Name`) %>% 
+  summarise(n = n(),.by = c(Gene_symbol))->ph_c
+
+ph_c$Gene_symbol<-factor(ph_c$Gene_symbol,levels = c(ph_c %>% arrange((n)) %>% pull(Gene_symbol)))
+g2<-ggpubr::ggbarplot(ph_c,y = "Gene_symbol", 
+                      x = "n",
+                      fill = "#708090",
+                      color = "white",
+                      x.text.angle = 0,
+                      xlab = "Frequency of Affected structure superterm",
+                      ylab = "Genes")+
+  geom_text(aes(label = n), hjust = -0.1)
+
+ggpubr::ggarrange(g1,g2)
+
+```
+
+The chord diagram shows that for some genes the perturbation phenotypes occur across multiple tissue systems (e.g. alcama, pax3a). The length of the grey bars correspond to the frequency values in the bar plot.
+```{r}
+library(circlize)
+pheno_terms<-read_csv("./Datasets/DatasetS0_csv_files/Pheno_terms_table_revised.csv")
+pheno_terms %>% summarise(n = n(),.by = c(`Gene Symbol`,tissue_system))
+
+pheno_terms_wide<-pheno_terms %>% summarise(n = n(),.by = c(`Gene Symbol`,tissue_system)) %>% 
+  pivot_wider(names_from = `Gene Symbol`, values_from = n) 
+pheno_terms_wide[is.na(pheno_terms_wide)]=0
+
+df_matrix <- pheno_terms_wide %>%
+  select(-tissue_system) %>%  # Remove the Gene_symbol column
+  as.matrix()
+
+rownames(df_matrix)<-pheno_terms_wide$tissue_system
+
+tissue_colors_vibrant <- c(
+  "Nervous" = "#FF4500",      # Orange Red
+  "Skeletal" = "#1E90FF",     # Dodger Blue
+  "Circulatory" = "#9400D3",  # Dark Violet
+  "Whole organism" = "#32CD32", # Lime Green
+  "Digestive" = "#FF7F50",    # Coral
+  "Embryo"= "#2611EE",        # Dark Navy
+  "Skin" = "#FFD700",         # Gold
+  "Excretory" = "#8B0000",    # Dark Red
+  "Reproductive" = "#FF1493", # Deep Pink
+  "Cell process" = "#00FFFF", # Cyan
+  "Immune" = "#EE82EE"     # Violet
+)
+
+
+chordDiagram(df_matrix, 
+             annotationTrack = "grid", 
+             preAllocateTracks = 1,grid.col = tissue_colors_vibrant)
+
+# Add labels for each tissue
+circos.trackPlotRegion(track.index = 1, panel.fun = function(x, y) {
+  tissue = CELL_META$sector.index
+  circos.text(CELL_META$xcenter, CELL_META$ylim[1] + .1, tissue, 
+              facing = "clockwise", niceFacing = TRUE, adj = c(0, 0.5))
+}, bg.border = NA)
+
+
+```
+
+### Comparing the distributions
+```{r,fig.dim=c(5,6)}
+#Load all the data
+tau_dat_all<-readRDS("./RDS/tau_dat_all.rds")
+read_csv("./Datasets/DatasetS0_csv_files/Danio_biomart.csv")->Danio_biomart 
+danio_conv<-read.csv("./Datasets/DatasetS0_csv_files/Danio_rerio_convergent_genes.csv")
+read_tsv("./Datasets/DatasetS0_csv_files/phenoGeneCleanData_fish_2023.05.07.tsv")->pheno 
+#Takes a long time
+#pheno2 %>% mutate(Gene_symbol=str_extract(rem_str, paste(Danio_biomart$`Gene name`, collapse = "|")))->pheno2
+#pheno2 %>% dplyr::rename("Gene Symbol"="Gene_symbol")->pheno2
+#pheno2 %>% saveRDS("./RDS/pheno_with_clean_gene_symbol.rds")
+readRDS("./RDS/pheno_with_clean_gene_symbol.rds")->pheno2
+
+rbind(pheno %>% dplyr::select(c(`Gene Symbol`, `Affected Structure or Process 1 superterm ID`, `Publication ID`,`Affected Structure or Process 1 superterm Name`)),
+      pheno2 %>%  dplyr::select(c(`Gene Symbol`, `Affected Structure or Process 1 superterm ID`, `Publication ID`,`Affected Structure or Process 1 superterm Name`))) %>% 
+    group_by(`Gene Symbol`) %>% na.omit() %>% 
+    mutate(uniq_affected_terms=length(unique(`Affected Structure or Process 1 superterm ID`)),
+           uniq_pubs=length(unique(`Publication ID`))) %>% distinct(`Gene Symbol`, .keep_all = T)->pheno_summary
+
+inner_join(
+Danio_biomart %>% dplyr::select(`Gene stable ID`,`Gene name`,`Gene description`) %>% dplyr::rename("Gene.ID"=`Gene stable ID`,"Gene Symbol"=`Gene name`),
+pheno_summary,by = "Gene Symbol") %>% na.omit() %>% distinct(Gene.ID,.keep_all = T)->pheno_summary
+
+#inner_join(pheno_summary,
+#estimated_ts_conv_Danio_tau_conv_all %>% dplyr::select(Gene.ID, conv), by = "Gene.ID")->pheno_summary
+
+inner_join(pheno_summary,
+           orth_list %>% dplyr::select(Orthogroup,orths) %>% dplyr::rename("Gene.ID"=orths),
+           by="Gene.ID") %>% 
+  dplyr::select(Gene.ID,Orthogroup,everything())->pheno_summary
+
+#Summarise the average number of affected phenotypic terms by Orthogroup
+#because each orthogroup has different genes with reporting of phenotypes
+#Look at the above pheno_summary data and compare with the Danio_biomart df.
+
+rbind(
+  pheno_summary %>% summarise(n=mean(uniq_affected_terms),.by = c("Orthogroup")) %>% filter(Orthogroup %in% non_spuroius_conv$Orthogroup) %>% mutate(state="Convergent"),
+  pheno_summary %>% summarise(n=mean(uniq_affected_terms),.by = c("Orthogroup")) %>% filter(!Orthogroup %in% non_spuroius_conv$Orthogroup) %>% mutate(state="Non-convergent"))->pheno_test_dat
+
+q1<-quantile(log2(pheno_test_dat$n),.33)
+q2<-quantile(log2(pheno_test_dat$n),.66)
+
+pheno_test_dat %>% 
+  ggplot(aes(x=log2(n), fill=state))+
+  geom_density(alpha=0.6)+
+  scale_fill_manual(values = c("#EA5B15","#1AAEC0"))+
+  theme_bw()+
+  geom_vline(xintercept = q1, linetype="dashed")+
+  geom_vline(xintercept = q2, linetype="dashed")+
+  xlab("Number of unique phenotypic terms (log2)")+
+  labs(title = "Distribution of unique phenotypic terms\nduring genetic perpurbation.",
+       subtitle = paste0("One-sided KS (greater) p-value: ",
+       signif((ksboot(x=pheno_test_dat %>% filter(state=="Convergent") %>% pull(n),
+        y=pheno_test_dat %>% filter(state=="Non-convergent") %>% pull(n),
+        alternative = "greater"))$ksboot.pvalue, digits = 4)))->dist_mutant_phenotypes
+
+pheno_test_dat %>% 
+  ggplot(aes(x=log2(n), color = state))+
+  stat_ecdf()+
+  scale_color_manual(values = c("#EA5B15","#1AAEC0"))+
+  theme_bw()+
+  xlab("Number of unique phenotypic terms (log2)")+
+  labs(title = "Cumulative probability distrubutions.")->ecdf_mutant_phenotypes
+
+ggarrange(dist_mutant_phenotypes,ecdf_mutant_phenotypes, ncol = 1, common.legend = T)
+```
+
+
+## Pleiotropic release model {.tabset}
+To reconcile our observation of multiple convergent substitutions in genes with intermediate levels of pleiotropy across distantly related fish species we introduce the pleiotropic release (PR) model (Fig 7A in main text). To test the PR model’s predictions, we use an evolutionary modeling approach based on Fisher’s geometric model (FGM). Using a distribution of pleiotropy derived from empirical data, we ran adaptive walks using two widely used evolutionary regimes: Strong Selection, Weak Mutation (SSWM) Regime, where mutations are rare but, when they occur, strong selection ensures the fixation of beneficial mutations and the loss of deleterious mutations. And the Greedy Adaptive Walk Regime, where multiple mutations arise (e.g., due to an increase in population size) and the mutation with the highest fitness advantage fixes in the population. The results of the adaptive walks showed that in the SSWM regime, the pleiotropy distribution of fixed mutations closely mirrored that of all mutations that arose, with slightly lower mean pleiotropy among fixed mutations, as expected due to limited mutation availability. In contrast, under the greedy walk regime, the pleiotropy distribution of fixed mutations shifted, favoring mutations with intermediate pleiotropy (Fig 7B). This suggests that in a mutation-rich environment, genes with intermediate pleiotropy play a crucial role in early adaptation to ecological changes. Code used to run the model can be found in the Scripts folder in the online repository in Zenodo.
+
+### Load the data
+```{r}
+#File paths
+files<-list.files(path = paste0("./Pleiotropy_data"), pattern = "\\.csv$", full.names = TRUE, recursive = TRUE)
+
+#Sim types
+scaled<-files[str_detect(files,"scaled")]
+not_scaled<-files[str_detect(files,"scaled",negate = T)]
+
+##Not scaled
+sswm.not_scaled<-not_scaled[str_detect(not_scaled,"SSWM")]
+greedy.not_scaled<-not_scaled[str_detect(not_scaled,"greedy")]
+
+sim_features_greedy_sswm_not_scaled<-function(file_name){
+  #Sim features for greedy and SSWM
+  regime<-str_split(file_name,"_",simplify = T)[,2] %>% str_remove("data/")
+  type_of_mut<-str_split(file_name,"_",simplify = T)[,3]
+  dist<-str_split(file_name,"_",simplify = T)[,5] %>% str_remove("dist=")
+  ntraits<-str_split(file_name,"_",simplify = T)[,6] %>% str_remove("ntraits=")
+  
+  read.csv(file_name, col.names = "P") %>% mutate(regime=regime, type_of_mut=type_of_mut, dist=dist, ntraits,ntraits) %>% 
+    as.data.frame() %>% return()
+}
+
+
+purrr::map(sswm.not_scaled,
+           sim_features_greedy_sswm_not_scaled) %>% list_rbind()->sswm.not_scaled_out
+
+
+purrr::map(greedy.not_scaled,
+           sim_features_greedy_sswm_not_scaled) %>% list_rbind()->greedy.not_scaled_out
+
+```
+
+### L distribution
+```{r}
+##Unscaled plots
+sswm.not_scaled_out %>% filter(dist=="L") %>% filter(ntraits==10) %>% 
+  ggplot(aes(x=P, fill = type_of_mut, y=after_stat(density)))+
+  facet_grid(rows=vars(type_of_mut))+
+  geom_histogram(color="black", binwidth = 1)+
+  scale_fill_manual(values = c("#4A72EA","#EAC34A"))+
+  labs(title = "SSWM regime")+
+  xlab("Pleiotropy of mutation")+
+  theme_bw()+
+  theme(legend.position = "none",
+        plot.title = element_text(size = 8),
+        axis.title = element_text(size = 8))->sswm_not_scaled_L
+
+greedy.not_scaled_out %>% filter(dist=="L") %>% filter(ntraits==10) %>% 
+  ggplot(aes(x=P, fill = type_of_mut, y=after_stat(density)))+
+  facet_grid(rows=vars(type_of_mut))+
+  geom_histogram(color="black", binwidth = 1)+
+  scale_fill_manual(values = c("#4A72EA","#EAC34A"))+
+  labs(title = "Greedy walk regime")+
+  xlab("Pleiotropy of mutation")+
+  theme_bw()+ 
+  theme(legend.position = "none",
+        plot.title = element_text(size = 8),
+        axis.title = element_text(size = 8))->greedy_not_scaled_L
+
+
+ggpubr::ggarrange(sswm_not_scaled_L, greedy_not_scaled_L, ncol = 2)
+
+kldtools::ksboot(x = greedy.not_scaled_out %>% filter(dist=="L") %>% filter(ntraits==10) %>% filter(type_of_mut=="all") %>% pull(P),
+        y = greedy.not_scaled_out %>% filter(dist=="L") %>% filter(ntraits==10) %>% filter(type_of_mut=="fixed") %>% pull(P), alternative = "greater",nboots = 1000)
+```
+
+### Reverse L
+```{r}
+##Other distributions
+#Reverse L
+sswm.not_scaled_out %>% filter(dist=="rev.L") %>% filter(ntraits==10) %>% 
+  ggplot(aes(x=P, fill = type_of_mut, y=..density..))+
+  facet_grid(rows=vars(type_of_mut))+
+  geom_histogram(color="black", binwidth = 1)+
+  scale_fill_manual(values = c("#4A72EA","#EAC34A"))+
+  labs(title = "SSWM regime")+
+  xlab("Pleiotropy of mutation")+
+  theme_bw()+
+  theme(legend.position = "none",
+        plot.title = element_text(size = 8),
+        axis.title = element_text(size = 8))->sswm_not_scaled_rev.L
+
+greedy.not_scaled_out %>% filter(dist=="rev.L") %>% filter(ntraits==10) %>% 
+  ggplot(aes(x=P, fill = type_of_mut, y=..density..))+
+  facet_grid(rows=vars(type_of_mut))+
+  geom_histogram(color="black", binwidth = 1)+
+  scale_fill_manual(values = c("#4A72EA","#EAC34A"))+
+  labs(title = "Greedy walk regime")+
+  xlab("Pleiotropy of mutation")+
+  theme_bw()+ 
+  theme(legend.position = "none",
+        plot.title = element_text(size = 8),
+        axis.title = element_text(size = 8))->greedy_not_scaled_rev.L
+
+ggpubr::ggarrange(sswm_not_scaled_rev.L, greedy_not_scaled_rev.L, ncol = 2)
+```
+
+### Uniform
+```{r}
+
+sswm.not_scaled_out %>% filter(dist=="uni") %>% filter(ntraits==10) %>% 
+  ggplot(aes(x=P, fill = type_of_mut, y=..density..))+
+  facet_grid(rows=vars(type_of_mut))+
+  geom_histogram(color="black", binwidth = 1)+
+  scale_fill_manual(values = c("#4A72EA","#EAC34A"))+
+  labs(title = "SSWM regime")+
+  xlab("Pleiotropy of mutation")+
+  theme_bw()+
+  theme(legend.position = "none",
+        plot.title = element_text(size = 8),
+        axis.title = element_text(size = 8))->sswm_not_scaled_uni
+
+greedy.not_scaled_out %>% filter(dist=="uni") %>% filter(ntraits==10) %>% 
+  ggplot(aes(x=P, fill = type_of_mut, y=..density..))+
+  facet_grid(rows=vars(type_of_mut))+
+  geom_histogram(color="black", binwidth = 1)+
+  scale_fill_manual(values = c("#4A72EA","#EAC34A"))+
+  labs(title = "Greedy walk regime")+
+  xlab("Pleiotropy of mutation")+
+  theme_bw()+ 
+  theme(legend.position = "none",
+        plot.title = element_text(size = 8),
+        axis.title = element_text(size = 8))->greedy_not_scaled_uni
+
+ggpubr::ggarrange(sswm_not_scaled_uni, greedy_not_scaled_uni, ncol = 2)
+```
+
+### All distribution plots
+```{r,fig.dim=c(5,10)}
+  ggpubr::ggarrange(ggpubr::ggarrange(sswm_not_scaled_L, greedy_not_scaled_L, ncol = 2),  
+                    ggpubr::ggarrange(sswm_not_scaled_rev.L, greedy_not_scaled_rev.L, ncol = 2),  
+                    ggpubr::ggarrange(sswm_not_scaled_uni, greedy_not_scaled_uni, ncol = 2), 
+                    ncol = 1)
+
+```
+
+
+

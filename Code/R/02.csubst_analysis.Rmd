@@ -16,6 +16,8 @@ knitr::opts_chunk$set(warning = F,message = F)
 
 #There is a bug in the original geom_curve code in ggplot2. 
 #The custom geom_curve is a work around
+#This is now fixed but leaving this here in case it comes up again
+#https://github.com/tidyverse/ggplot2/issues/5831
 geom_curve <- function(mapping = NULL, data = NULL,
                        stat = "identity", position = "identity",
                        ...,
@@ -202,7 +204,7 @@ make_site_data(tissue = combined_arity$Orthogroup,fname = "All")
 ```
 
 ### Check site model output for spurious amino acids substitutions.
-In this section, I check for spurious convergence using several filtering and summary steps. Essentially, the idea is to find strong evidence of convergence by filtering values of the convergence metric *OCNany2spe* and filter out substitutions that are too close to one another on the protein structure.  
+In this section, I check for spurious convergence using several filtering and summary steps. Essentially, the idea is to find strong evidence of convergence by filtering values of the convergence metric *OCNany2spe* and filter out substitutions that are too close to one another on the protein structure.  The non-spurious substitutions can be found in electronic supplementary material DatasetS6. The examples of spurious substitutions can be found in the electronic supplementary material DatasetS7. 
  The final output *non_spuroius_conv* has the list of orthologs that satisfy my criteria.
 ```{r,eval=FALSE}
 files<-list.files(path = paste0("./Datasets/DatasetS6_Non_spurious_convergence"), pattern = "\\.tsv$", full.names = TRUE, recursive = TRUE)
@@ -359,7 +361,6 @@ csubst_vis<-function(OG){
 }
 
 # Run the visualisation function on the non spurious convergence results 
-
 try(purrr::map(file_df %>% filter(id %in% non_spuroius_conv) %>% pull('id'), csubst_vis))
 
 ```
@@ -378,6 +379,7 @@ orth_list<-orth_list %>% mutate(Order = if_else(Order == "Carangaria", "Carangif
 orth_list<-left_join(orth_list %>% dplyr::rename(Species = sp),fish_data %>% dplyr::select(c(Species,Family)),by = "Species")
 non_spuroius_conv<-read_csv("Datasets/DatasetS0_csv_files/Non_spurious_conv.csv")
 seq_stat<-read_tsv("./Datasets/DatasetS0_csv_files/seq_stats.tsv") #use the seqkit toolkit (https://bioinf.shenwei.me/seqkit/) to obtain this
+combined_arity <-readRDS("./RDS/combined_arity.rds")
 #All convergent genes in all species and orders
 left_join(tax_info_conv,danio_conv %>% dplyr::select(Orthogroup,Gene.name,Gene.description),by = "Orthogroup") %>% distinct(Protein_id, .keep_all = T)->tax_info_conv
 ```
@@ -441,11 +443,7 @@ ksplot<-function(dat){
   # create ECDF of data
   cdf1 <- ecdf(dat$n.sampled)
   cdf2 <- ecdf(dat$n.estimated)
-  # find min and max statistics to draw line between points of greatest distance
-  #minMax <- seq(min(dat$n.estimated, dat$n.sampled), max(dat$n.estimated, dat$n.sampled), length.out=length(dat)) 
-  #x0 <- minMax[which( abs(cdf1(minMax) - cdf2(minMax)) == max(abs(cdf1(minMax) - cdf2(minMax))) )] 
-  #y0 <- cdf1(x0) 
-  #y1 <- cdf2(x0) 
+
   
   dat<-dat %>% reshape2::melt()
   
@@ -509,11 +507,12 @@ ggpubr::ggarrange(p1,p2,nrow = 2)
 ```
 
 ### Zoological characteristics of the convergent species
-Here I look at some of the zoological characteristics of the convergent species. The data were collected from FishBase. Not all the species had data. I only present the data that was available.
+Here I look at some of the zoological characteristics of the convergent species. The data were collected from FishBase. Not all the species had data. I only present the data that was available.  
+The table below shows number of species in our dataset from each Family.
 ```{r,eval=T}
 library(rfishbase)
 fish_call<-validate_names(str_replace(fish_data$Species,"_"," "))
-taxa<-rfishbase::load_taxa() %>% filter(Species %in% fish_call) %>% collect() #%>% dplyr::select(Species,Order,Family)
+taxa<-rfishbase::load_taxa() %>% filter(Species %in% fish_call) %>% collect() 
 env_dat<-rfishbase::ecosystem(fish_call) %>% distinct(Species,.keep_all = T) %>% dplyr::select(Species,Salinity,EcosystemType,Climate)
 env_dat<-env_dat %>% mutate(Species = str_replace_all(env_dat$Species," ","_"))
 
@@ -536,7 +535,6 @@ tax_info_conv<-left_join(tax_info_conv,food_dat,by = "Species")
 
 ### Climate
 ```{r,fig.dim=c(15,8)}
-#make_pie_chart(x = "Climate")
 p1<-tax_info_conv %>% na.omit() %>% summarise(n = n(),.by = c(Orthogroup,Climate)) %>% 
   reshape2::melt() %>% ggpubr::ggbarplot(x = "Orthogroup",y = "value",fill = "Climate",color = "Climate",
                                          x.text.angle = 90,label = F,palette = "jco",ylab = "Number of species",title = "Climate distribution of speices within convergent orthogroups")
@@ -546,7 +544,6 @@ p1
 
 ### Food item
 ```{r,fig.dim=c(15,8)}
-#make_pie_chart(x = "FoodI")
 p2<-tax_info_conv %>% na.omit() %>% summarise(n = n(),.by = c(Orthogroup,FoodI)) %>% 
   reshape2::melt() %>% ggpubr::ggbarplot(x = "Orthogroup",y = "value",fill = "FoodI",color = "FoodI",
                                          x.text.angle = 90,label = F,palette = "jco",ylab = "Number of species",title = "Food item distribution of speices within convergent orthogroups")
@@ -555,7 +552,6 @@ p2
 
 ### Salinity
 ```{r,fig.dim=c(15,8)}
-#make_pie_chart(x = "Salinity")
 p3<-tax_info_conv %>% na.omit() %>% summarise(n = n(),.by = c(Orthogroup,Salinity)) %>% 
   reshape2::melt() %>% ggpubr::ggbarplot(x = "Orthogroup",y = "value",fill = "Salinity",color = "Salinity",
                                          x.text.angle = 90,label = F,palette = "jco",ylab = "Number of species",title = "Salinity distribution of speices within convergent orthogroups")
@@ -564,7 +560,6 @@ p3
 
 ### Ecosystem type
 ```{r,fig.dim=c(15,8)}
-#make_pie_chart(x = "EcosystemType")
 p4<-tax_info_conv %>% na.omit() %>% summarise(n = n(),.by = c(Orthogroup,EcosystemType)) %>% 
   reshape2::melt() %>% ggpubr::ggbarplot(x = "Orthogroup",y = "value",fill = "EcosystemType",color = "EcosystemType",
                                          x.text.angle = 90,label = F,palette = "jco",ylab = "Number of species",title = "Ecosystem type distribution of speices within convergent orthogroups")
@@ -613,41 +608,6 @@ tax_info_conv %>% filter(Order == "Eupercaria") %>% summarise(n = n(),.by = Spec
   scroll_box(width = "350px", height = "400px")
 ```
 
-## Summary of convergent amino acid substitutions {.tabset}
-In this section I provide summaries of the convergent amino acid substitutions in terms of their distribution on the protein structure.
-
-### Distribution of convergent substitutions on protein structure
-Here I check whether there is any relationship between the occurrence of convergence and site features on the protein. Using a chi-sq test of independence I found that in our data, there is no relationship between protein site feature and convergence. This tells me that there isn't a general trend for convergence to be enriched on surface residues, rather it seems specific to each protein.
-```{r}
-prot<-read_csv("./Datasets/DatasetS0_csv_files/protein_sites/Session_pymol/combined_prots.csv") %>% filter(Localisation != "Localisation") %>% filter(Number_aa != "Number_aa") %>% filter(Name_aa != "Name_aa") %>% filter(near_lig != "near_lig") %>% filter(Secondary_Structure != "Secondary_Structure") %>% filter(convergence != "convergence") %>% filter(Localisation != "no_build") %>% filter(Secondary_Structure != "no_build")
-
-chisq.test(table(prot$Localisation,prot$convergence),correct = F)
-chisq.test(table(prot$Secondary_Structure,prot$convergence),correct = F)
-
-```
-
-### Structural properties
-Here I visualise the structural characteristics of the convergent substitutions to get an sense of where on the protein structure most sites are located.  
-Original data found in Datasets/DatasetS0_csv_files/protein_sites/Session_pymol
-```{r,fig.dim=c(5,12)}
-str_dat<-tibble(surface = c("Surface","Burried"),
-                no = c(159,22),
-                n.per = round((no/sum(no))*100,digits = 1))
-conf_dat<-tibble(conf = c("Helix","Sheet","Loop"),
-                 no = c(83,33,65),
-                 n.per = round((no/sum(no))*100,digits = 1))
-
-
-labs1<-paste0(str_dat[[1]], " (", str_dat$n.per, "%)")
-labs2<-paste0(conf_dat[[1]], " (", conf_dat$n.per, "%)")
-  
-
-g1<-ggpubr::ggbarplot(str_dat,x = "surface",y = "n.per",palette = "aaas",color = "white",fill = "surface",label = labs1,xlab = "Localisation of convergnt residues on protein",ylab = "Percentage of convergent sites")
-g2<-ggpubr::ggbarplot(conf_dat,x = "conf",y = "n.per",palette = "aaas",color = "white",fill = "conf",label = labs2,xlab = "Localisation of convergent residues on secondary structure",ylab = "Percentage of convergent sites")
-
-ggpubr::ggarrange(g1,g2,nrow = 2)
-
-```
 
 ## Tissue-specific convergent orthologs {.tabset}
 To get a deeper insight into the role of molecular convergence in adaptive evolution, I identify convergent genes that also have tissue-specific gene expression.
@@ -664,21 +624,21 @@ non_spuroius_conv<-read_csv("Datasets/DatasetS0_csv_files/Non_spurious_conv.csv"
 
 
 ### tissue specific genes. (check Bgee processing rmd to know how to get these)
-skin<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_skin.rds") 
+skin<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_with_log_no_combat_skin.rds") 
                            %>% purrr::list_rbind() %>% dplyr::select(Gene.ID))$Gene.ID)
-brain<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_brain.rds") 
+brain<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_with_log_no_combat_brain.rds") 
                            %>% purrr::list_rbind() %>% dplyr::select(Gene.ID))$Gene.ID)
-eye<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_eye.rds") 
+eye<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_with_log_no_combat_eye.rds") 
                            %>% purrr::list_rbind() %>% dplyr::select(Gene.ID))$Gene.ID)
-heart<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_heart.rds") 
+heart<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_with_log_no_combat_heart.rds") 
                            %>% purrr::list_rbind() %>% dplyr::select(Gene.ID))$Gene.ID)
-liver<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_liver.rds") 
+liver<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_with_log_no_combat_liver.rds") 
                            %>% purrr::list_rbind() %>% dplyr::select(Gene.ID))$Gene.ID)
-muscle<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_muscle.rds") 
+muscle<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_with_log_no_combat_muscle.rds") 
                            %>% purrr::list_rbind() %>% dplyr::select(Gene.ID))$Gene.ID)
-ovary<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_ovary.rds") 
+ovary<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_with_log_no_combat_ovary.rds") 
                            %>% purrr::list_rbind() %>% dplyr::select(Gene.ID))$Gene.ID)
-testis<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_no_log_no_combat_testis.rds") 
+testis<-orth_list %>% filter(orths %in% (readRDS("./RDS/Tau_0.8_TMM_cpm_with_log_no_combat_testis.rds") 
                            %>% purrr::list_rbind() %>% dplyr::select(Gene.ID))$Gene.ID)
 
 #Get the orthologs that are exclusively tissue specific for each tissue
@@ -784,7 +744,7 @@ cont_dat %>% mutate(is_convergent = if_else(cont_dat$Orthogroup %in% d$Orthogrou
   mutate(testis_spec = if_else(cont_dat$Orthogroup %in% (testis_excl %>% distinct(Orthogroup))$Orthogroup, TRUE, FALSE))->cont_dat
 
 ft<-function(x){
-  res<-fisher.test(cont_dat$is_convergent,x)
+  res<-fisher.test(cont_dat$is_convergent,x,alternative = "greater")
   if (res$p.value < 0.05) {
     return(cat(paste(
       "p-value:",
@@ -820,15 +780,22 @@ I wanted to check whether the proportion of convergent tissue specific orthogrou
 ```{r,fig.dim=c(11,5)}
 wil.test.dat<-left_join(cont_plot_dat,ts_prop_dat)
 
-wilcox.test(wil.test.dat$genes,wil.test.dat$ts.prop,paired = T,exact = T)
+wilcox.test(x=wil.test.dat$genes,
+            y=wil.test.dat$ts.prop,
+            paired = T,exact = T,
+            alternative = "two.sided")
 
 
 plot_dat<-wil.test.dat %>% dplyr::rename(`tissue specific convergent genes` = genes) %>% dplyr::rename(`tissue specific genes overall` = ts.prop) %>% reshape2::melt()  %>% mutate(value = round(value,digits = 1))
-ggpubr::ggbarplot(plot_dat, x = "group",y = "value",fill = "variable",
-                  color = "variable",palette = c("#EE0000FF","#3B4992FF"),
-                  position = position_dodge(0.8),ylab = "Relative proportion (%) of genes")
+
+ggpubr::ggbarplot(plot_dat, x = "group",y = "value",fill = "variable",alpha=0.7,
+                  color = "black",palette = c("#EA5B15","#1AAEC0"),
+                  position = position_dodge(0.8),ylab = "Relative proportion\nof genes (%)")+
+    theme(axis.text.x = element_text(angle = 90,size = 8, vjust = 0.2),
+          legend.position = "right")
 
 ```
+
 ## Relationships between copy number and convergence {.tabset}
 The convergnece estimates could be biased by the higher power of the OCN convergence metric for longer genes or orthogroups containing more genes simply because the sequence space is larger. I used a Pearson correlation test to check whether the length or the number of genes in each orthogroup introduced any bias. I found no significant relationship between gene number or gene length and the OCN metric, suggesting that the OCN value strictly depends on sequence variation, and that such bias is not a concern in our data. 
 
@@ -895,22 +862,41 @@ ks_test_pvalues %>% saveRDS("./RDS/num_seq_KS_pvals.rds")
 
 ```
 
-```{r,fig.dim=c(10,4)}
+```{r,fig.dim=c(7,5)}
 conv_seq<-seq_stat %>% filter(Orthogroup %in% non_spuroius_conv$Orthogroup)
 bg_seq<-seq_stat %>% filter(!Orthogroup %in% non_spuroius_conv$Orthogroup) %>% filter(num_seqs < 1500)
 
 plot_dat<-tibble(n.estimated = conv_seq$num_seqs, 
            n.sampled = bg_seq[runif(89,min = 1,max = 9184) %>% round(),]$num_seqs)
 
-p1<-ggpubr::ggdensity(plot_dat %>% reshape2::melt(),x = "value",add = "mean", rug = T,
-                  color = "variable",fill = "variable",palette = c("#EB1614","#74D1F5"))+xlab("Number of gene copies")+ylab("Frequency of gene copies")
+est_mean<-mean(plot_dat$n.estimated)
+
+p1<-plot_dat %>% dplyr::rename("Convergent genes"="n.estimated",
+                           "Non-convergent genes"="n.sampled") %>% 
+  pivot_longer(c(`Convergent genes`,`Non-convergent genes`),
+               names_to = "Type of gene") %>% 
+  ggplot(aes(x=log2(value),fill = `Type of gene`))+
+  geom_density(alpha=0.6)+
+  geom_vline(xintercept = log2(mean(plot_dat$n.estimated)), color="#EA5B15", linetype="dashed")+
+  geom_vline(xintercept = log2(mean(plot_dat$n.sampled)), color="#74D1F5", linetype="dashed")+
+  scale_fill_manual(values = c("#EA5B15","#1AAEC0"))+
+  xlab("Number of gene copies (log2)")+
+  labs(title = "Gene copy distribution of convergent\nand randomly sampled genes",
+       subtitle = "Dashed lines indicate mean gene copy number",
+       caption = "Bootstrapped Kolmogorov-Smirnov test p-value = 0.002")+
+  theme_bw()
 
 ks_test_pvalues<-readRDS("./RDS/num_seq_KS_pvals.rds")
 
-p2<-ggpubr::ggdensity(ks_test_pvalues, x= "adj.p.values",add = "mean",color = "#00AFBB",fill = "#00AFBB",rug = T)+xlab("Benjamini-Hochberg adjusted p-value")+ylab("Frequency density")
 
-ggpubr::ggpar(p1,main = "Gene copy distribution of 89 convergent (estimated) and 89 randomly sampled genes",submain = "Dashed lines indicate mean gene copy number")
-ggpubr::ggpar(p2,main = "P-value distribution of one sided Kolmogorov-Smirnov test with mean p-value = 0.002")
+p2<-ks_test_pvalues %>% ggplot(aes(x = adj.p.values, y=..density..))+
+    geom_histogram(binwidth = .002,color="black",fill="white")+
+    geom_vline(xintercept = mean(ks_test_pvalues$adj.p.values), linetype="dashed")+
+    xlab("BH adjusted p-value")+
+    labs(subtitle = "P-value distribution of one sided\nKolmogorov-Smirnov test\nmean p-value = 0.002 (dashed line)")+theme_bw()
+
+ggarrange(p1,p2, ncol = 1)
+
 ```
 
 
@@ -928,7 +914,7 @@ library(RSQLite)
 library(tidyverse)
 
 
-annot<-readRDS("./Datasets/DatasetS0_csv_files/annot_processed.rds")
+annot<-readRDS("./RDS/annot_processed.rds")
 goFrame<-GOFrame(as.data.frame(annot, organism = "fish"))
 goAllFrame<-GOAllFrame(goFrame)
 gsc<-GeneSetCollection(goAllFrame,setType = GOCollection())
@@ -940,7 +926,7 @@ GO_enrich<-function(.data){
                              geneSetCollection = gsc,
                              geneIds = .data,
                              universeGeneIds = universe,
-                             ontology = "BP", #options: BP, MF, CC
+                             ontology = "CC", #options: BP, MF, CC
                              pvalueCutoff = 0.05,
                              conditional = F,
                              testDirection = "over")
@@ -949,14 +935,14 @@ GO_enrich<-function(.data){
 
   Over_up.pv<-pvalues(Over_up)
   pv.fdr<-p.adjust(Over_up.pv,"fdr")
-  summary(Over_up) %>% as_tibble() %>% mutate(FDR = pv.fdr[1:nrow(summary(Over_up) %>% as_tibble())]) %>% dplyr::select(GOBPID,FDR,Term,Size) %>% filter(FDR<=0.05) %>% return()
+  summary(Over_up) %>% as_tibble() %>% mutate(FDR = pv.fdr[1:nrow(summary(Over_up) %>% as_tibble())]) %>% dplyr::select(GOCCID,FDR,Term,Size) %>% filter(FDR<0.05) %>% return()
   }
 
 #Ortholog list
 orth_list<-readRDS("./RDS/large_fish_tree_all_orders.rds")
 orth_list<-orth_list %>% mutate(orths =  str_remove(orth_list$orths,"..$"))
 non_spuroius_conv<-read_csv("Datasets/DatasetS0_csv_files/Non_spurious_conv.csv")
-bp_GO<-GO_enrich(orth_list %>% filter(Orthogroup %in% non_spuroius_conv$Orthogroup) %>% pull(orths)) %>% saveRDS("./RDS/tru_conv_GO_BP.rds")
+GO_enrich(orth_list %>% filter(Orthogroup %in% non_spuroius_conv$Orthogroup) %>% pull(orths)) %>% saveRDS("./RDS/tru_conv_GO_CC.rds")
 
 ## GO plot
 library(ggforce)
@@ -987,7 +973,7 @@ In this section I check whether is any relationship between convergent genes wit
 Neither chisq test, nor the Fisher's exact test showed evidence for any significant relationships between GO terms and ecological characters. This is likely due to low statistical power.  
 Users can run the test to confirm. For the sake of brvity I have not inlcuded this output.
 ```{r,eval=FALSE}
-d<-readRDS("./RDS/tru_conv_GO_BP.rds") 
+d<-readRDS("./RDS/tru_conv_GO_CC.rds") 
 orth_list<-readRDS("./RDS/large_fish_tree_all_orders.rds")
 orth_list<-orth_list %>% mutate(orths =  str_remove(orth_list$orths,"..$"))
 
@@ -1008,8 +994,6 @@ orth_list<-orth_list %>% mutate(orths =  str_remove(orth_list$orths,"..$"))
 
 
 GO_eco_test<-function(GO_term){
- # d<-readRDS("./RDS/tru_conv_GO_BP.rds") 
-#annot %>% filter(GO_id == GO_term) 
 
 perform_test<-function(df){
 test1<-chisq.test(table(GO = df$GO_id, test = df$Climate),correct = F,simulate.p.value = T,B = 2000)
@@ -1017,19 +1001,6 @@ test2<-chisq.test(table(GO = df$GO_id, test = df$Salinity),correct = F,simulate.
 test3<-chisq.test(table(GO = df$GO_id, test = df$EcosystemType),correct = F,simulate.p.value = T,B = 2000)
 test4<-chisq.test(table(GO = df$GO_id, test = df$FoodI),correct = F,simulate.p.value = T,B = 2000)
 
-#test1<-fisher.test(table(GO = df$GO_id, test = df$Climate))#,correct = F,simulate.p.value = T,B = 2000)
-#test2<-fisher.test(table(GO = df$GO_id, test = df$Salinity))#,correct = F,simulate.p.value = T,B = 2000)
-#test3<-fisher.test(table(GO = df$GO_id, test = df$EcosystemType))#,correct = F,simulate.p.value = T,B = 2000)
-#test4<-fisher.test(table(GO = df$GO_id, test = df$FoodI))#,correct = F,simulate.p.value = T,B = 2000)
-
-#Check the tables
-#table(GO = GO_cont$GO_id, test = GO_cont$Climate)
-#test1$expected
-#plot<-barplot(table(GO = GO_cont$GO_id, test = GO_cont$Climate))
-
-#return(list(test1$p.value,test2$p.value,test3$p.value,test4$p.value))
-
-#pvals<-p.adjust(list(test1$p.value,test2$p.value,test3$p.value),method = "bonferroni")
 pvals<-list(test1$p.value,test2$p.value,test3$p.value)
 return(pvals)
 }
@@ -1053,67 +1024,6 @@ purrr::map(GO_eco_test_list,GO_eco_test)->res
 purrr::list_flatten(res) %>% p.adjust(method = "BH") %>% view()
 
 ``` 
-
-## Phenotypic data from ZFIN {.tabset}
-The ZFIN database has a lot of functional data on gene knockouts and knockdowns in *Danio rerio*. Using the data base I look for potential phenotypes the convergent genes might affect. While ZFIN doesn’t have data for all the convergent *Danio rerio* orthologs, the ones that are present show that they can potentially affect multiple phenotypes.  
-
-### Load the data
-```{r,eval=FALSE}
-read_csv("./Datasets/DatasetS0_csv_files/Danio_biomart.csv")->Danio_biomart #Obtained from bioMart package
-read_tsv("./Datasets/DatasetS0_csv_files/phenoGeneCleanData_fish_2023.05.07.tsv")->pheno #Download from ZFIN
-
-
-
-get_danio<-function(data,name){
-orth_list %>% filter(Species=="Danio_rerio") %>% filter(Orthogroup %in% data)->d
-
-Danio_biomart %>% filter(`Gene stable ID` %in% d$orths) %>% distinct(`Gene name`) %>%  write_csv(paste0("./Datasets/DatasetS0_csv_files/",name,"_convergent_Danio_genes.csv"))
-}
-
-get_danio(non_spuroius_conv$Orthogroup,"Non_spurious_conv")
-
-orth_list %>% filter(Orthogroup %in% non_spuroius_conv$Orthogroup) %>% filter(sp == "Danio_rerio") %>% dplyr::select(Orthogroup,orths)->dan
-
-
-left_join(dan,pheno %>% filter(`Gene Symbol` %in% dan$`Gene name`) %>% dplyr::rename(`Gene name`=`Gene Symbol`), by = "Gene name") %>% write_csv("./Datasets/DatasetS0_csv_files/Danio_rerio_convergent_genes_pheno.csv")
-```
-
-### ZFIN table
-```{r,echo=FALSE,include=TRUE,message=FALSE}
-pheno_conv<-read_csv("./Datasets/DatasetS0_csv_files/Danio_rerio_convergent_genes_pheno.csv")
-
-kbl(head(pheno_conv,1000)) %>% kable_styling() %>%
-  scroll_box(width = "1000px", height = "400px")
-```
-
-### Phenotype plots
-The plot shows the distribution of phenotype keyword terms and the frequency of affected phenotype terms from ZFIN. Panel on the left shows the effect of genetic perturbation on the convergent genes. Panel on the left shows the number of unique affected structures that show a phenotype after genetic perturbation. The data shows that mutations in the convergent genes can affect several phenotypes and structures, with a majority of the effects showing a decrease or reduction in affected structures or processes, while a few shows an increase.
-```{r,fig.dim=c(12,12)}
-ph_dat<-pheno_conv %>% summarise(n = n(),.by = c(`Phenotype Keyword Name`)) %>% arrange(desc(n))
-g1<-ggpubr::ggbarplot(ph_dat, y = "Phenotype Keyword Name", x = "n", 
-                  x.text.angle = 90,
-                  fill = "#DABF10",
-                  color = "white",
-                  xlab = "Frequency of keyword")+
-    geom_text(aes(label = n), hjust = -0.2)
-
-
-read_tsv("./Datasets/DatasetS0_csv_files/phenoGeneCleanData_fish_2023.05.07.tsv")->pheno #Download from ZFIN
-ph_c<-pheno %>% filter(`Gene Symbol` %in% pheno_conv$`Gene name`)
-ph_c<-ph_c %>% dplyr::select(`Gene Symbol`,`Affected Structure or Process 1 superterm ID`) %>% 
-  na.omit() %>% summarise(n = n(),.by = c(`Gene Symbol`)) %>% 
-  mutate(type = "convergent")
-
-g2<-ggpubr::ggbarplot(ph_c,y = "Gene Symbol", 
-                      x = "n",
-                      fill = "#DABF10",
-                      color = "white",
-                      xlab = "Frequency of Affected structure term")+
-  geom_text(aes(label = n), hjust = -0.1)
-
-ggpubr::ggarrange(g1,g2)
-
-```
 
 ### Session info
 ```{r print-session-info_csubst}
